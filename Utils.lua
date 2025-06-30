@@ -66,6 +66,11 @@ end
 function Utils.updateDistanceLabel(sender, distanceLabel)
     local ticker
     ticker = C_Timer.NewTicker(1, function()
+        -- Only update if the label is still for the correct sender
+        if UI.ticketFrame and UI.ticketFrame.currentSender ~= sender then
+            ticker:Cancel()
+            return
+        end
         if UnitInParty(sender) then
             local playerX, playerY, playerInstanceID = UnitPosition("player")
             local targetX, targetY, targetInstanceID = UnitPosition(sender)

@@ -1,8 +1,7 @@
 -- Config.lua
-
 local Config = {}
 
-local AceGUI = LibStub("AceGUI-3.0")  -- Use LibStub to load AceGUI
+local AceGUI = LibStub("AceGUI-3.0") -- Use LibStub to load AceGUI
 
 if not AceGUI then
     print("Error: AceGUI-3.0 is not loaded properly.")
@@ -32,14 +31,9 @@ debugMode = false
 Config.currentTraderName = nil
 Config.currentTraderRealm = nil
 Config.currentTraderMoney = nil
-Config.Portals = {
-    "Portal: Darnassus",
-    "Portal: Stormwind",
-    "Portal: Ironforge",
-    "Portal: Orgrimmar",
-    "Portal: Thunder Bluff",
-    "Portal: Undercity",
-}
+Config.Portals = {"Portal: Darnassus", "Portal: Stormwind", "Portal: Ironforge", "Portal: Orgrimmar",
+                  "Portal: Thunder Bluff", "Portal: Undercity"}
+-- List of currently alive portals
 Config.CurrentAlivePortals = {}
 -- Define default settings - these will be used if the saved variables are not found
 ThicPortalSettings = {
@@ -48,52 +42,25 @@ ThicPortalSettings = {
     totalTradesCompleted = 0,
     lastUpdateDate = nil,
 
-    BanList = {
-        "Mad",
-        "Kitten"
-    },
+    BanList = {},
     KeywordBanList = {},
 
-    IntentKeywords = {
-        "wtb", "wtf", "want to buy", "looking for", "need", "seeking",
-        "buying", "purchasing", "lf", "can anyone make", "can you make",
-        "can anyone do", "can you do"
-    },
-    DestinationKeywords = {
-        "darn", "darnassuss", "darnas", "darrna", "darnaas",
-        "darnassus", "darnasuss", "dalaran", "darna", "darnasus",
-        "sw", "stormwind", "if", "ironforge"
-    },
-    ServiceKeywords = {
-        "portal", "port", "prt", "portla", "pportal",
-        "protal", "pport", "teleport", "tp", "tele"
-    },
-    FoodKeywords = {
-        "food"
-    },
-    WaterKeywords = {
-        "water"
-    },
+    IntentKeywords = {"wtb", "wtf", "want to buy", "looking for", "need", "seeking", "buying", "purchasing", "lf",
+                      "can anyone make", "can you make", "can anyone do", "can you do"},
+    DestinationKeywords = {"darn", "darnassuss", "darnas", "darrna", "darnaas", "darnassus", "darnasuss", "dalaran",
+                           "darna", "darnasus", "sw", "stormwind", "if", "ironforge"},
+    ServiceKeywords = {"portal", "port", "prt", "portla", "pportal", "protal", "pport", "teleport", "tp", "tele"},
+    FoodKeywords = {"food"},
+    WaterKeywords = {"water"},
 
     inviteMessage = "[Thic-Portals] Good day! I am creating a portal for you as we speak, please head over - I'm marked with a star.",
     inviteMessageWithoutDestination = "[Thic-Portals] Good day! Please specify a destination and I will create a portal for you.",
     tipMessage = "[Thic-Portals] Thank you for your tip, enjoy your journey - safe travels!",
     noTipMessage = "[Thic-Portals] Enjoy your journey and thanks for choosing Thic-Portals. Safe travels!",
 
-    commonPhrases = {
-        "wtb mage port",
-        "wtb mage portal",
-        "wtb portal darnassus",
-        "wtb portal darnasus",
-        "wtb portal darna",
-        "wtb portal darn",
-        "wtb darnassus port",
-        "wtb darnasus port",
-        "wtb darn port",
-        "wtb darna port",
-        "wtb portal",
-        "wtb port"
-    },
+    commonPhrases = {"wtb mage port", "wtb mage portal", "wtb portal darnassus", "wtb portal darnasus",
+                     "wtb portal darna", "wtb portal darn", "wtb darnassus port", "wtb darnasus port", "wtb darn port",
+                     "wtb darna port", "wtb portal", "wtb port"},
 
     inviteCooldown = 300,
     distanceInferringClose = 50,
@@ -116,12 +83,12 @@ ThicPortalSettings = {
     prices = {
         food = {
             ["Conjured Cinnamon Roll"] = 2500,
-            ["Conjured Sweet Roll"] = 2500,
+            ["Conjured Sweet Roll"] = 2500
         },
         water = {
             ["Conjured Crystal Water"] = 2500,
-            ["Conjured Sparkling Water"] = 2500,
-        },
+            ["Conjured Sparkling Water"] = 2500
+        }
     },
 
     toggleButtonPosition = {
@@ -167,7 +134,8 @@ function Config.initializeSavedVariables()
     Config.Settings.ServiceKeywords = ServiceKeywords or Config.Settings.ServiceKeywords
     --
     Config.Settings.inviteMessage = InviteMessage or Config.Settings.inviteMessage
-    Config.Settings.inviteMessageWithoutDestination = InviteMessageWithoutDestination or Config.Settings.inviteMessageWithoutDestination
+    Config.Settings.inviteMessageWithoutDestination = InviteMessageWithoutDestination or
+                                                          Config.Settings.inviteMessageWithoutDestination
     Config.Settings.tipMessage = TipMessage or Config.Settings.tipMessage
     Config.Settings.noTipMessage = NoTipMessage or Config.Settings.noTipMessage
     --
@@ -214,12 +182,12 @@ function Config.initializeSavedVariables()
         Config.Settings.prices = ThicPortalSettings.prices or {
             food = {
                 ["Conjured Cinnamon Roll"] = 2500, -- 25 silver
-                ["Conjured Sweet Roll"] = 2500, -- 25 silver
+                ["Conjured Sweet Roll"] = 2500 -- 25 silver
             },
             water = {
                 ["Conjured Crystal Water"] = 2500, -- 25 silver
-                ["Conjured Sparkling Water"] = 2500, -- 25 silver
-            },
+                ["Conjured Sparkling Water"] = 2500 -- 25 silver
+            }
         }
     end
 

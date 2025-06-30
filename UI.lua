@@ -1,5 +1,4 @@
 -- UI.lua
-
 local Config = _G.Config
 local Utils = _G.Utils
 
@@ -11,7 +10,7 @@ local toggleButtonOverlayTexture
 
 local fixedLabelWidth = 150 -- Set a fixed width for the labels
 
-local AceGUI = LibStub("AceGUI-3.0")  -- Use LibStub to load AceGUI
+local AceGUI = LibStub("AceGUI-3.0") -- Use LibStub to load AceGUI
 
 if not AceGUI then
     print("Error: AceGUI-3.0 is not loaded properly.")
@@ -29,6 +28,15 @@ UI.disableGlobalChannelsCheckbox = AceGUI:Create("CheckBox");
 UI.disableAFKProtectionCheckbox = AceGUI:Create("CheckBox");
 UI.soundEnabledCheckbox = AceGUI:Create("CheckBox");
 UI.debugModeCheckbox = AceGUI:Create("CheckBox");
+
+-- Paginated Ticket Window State
+UI.ticketFrame = nil
+UI.ticketList = {}
+UI.currentTicketIndex = 1
+
+-- Helper to update the ticket frame with current ticket
+local currentTicker = nil
+local viewingMessage = false
 
 local function addCheckbox(group, label, checkbox, initialValue, callback, tooltipText)
     -- Add spacer between checkboxes
@@ -98,7 +106,8 @@ local function addNumberEditBox(labelText, numberVar, callback)
 
     -- Create a label element with the formatted copper value (0g, 0s, 0c) that updates after the user confirms a new numberVar value
     local valueLabel = AceGUI:Create("Label")
-    valueLabel:SetText(Utils.formatCopperValue(numberVar) .. " each (20x " .. Utils.formatCopperValue(numberVar * 20) .. ")")
+    valueLabel:SetText(Utils.formatCopperValue(numberVar) .. " each (20x " .. Utils.formatCopperValue(numberVar * 20) ..
+                           ")")
     valueLabel:SetWidth(100)
 
     -- Create an edit box for the number
@@ -206,11 +215,8 @@ function UI.createToggleButton()
     toggleButton:SetSize(64, 64) -- Width, Height
 
     -- Set the point using the saved position in the config or default to 0, 200
-    toggleButton:SetPoint(
-        Config.Settings.toggleButtonPosition.point or "CENTER",
-        Config.Settings.toggleButtonPosition.x or 0,
-        Config.Settings.toggleButtonPosition.y or 200
-    )
+    toggleButton:SetPoint(Config.Settings.toggleButtonPosition.point or "CENTER",
+        Config.Settings.toggleButtonPosition.x or 0, Config.Settings.toggleButtonPosition.y or 200)
 
     -- Disable the default draw layers to hide the button's default textures
     toggleButton:DisableDrawLayer("BACKGROUND")
@@ -266,7 +272,7 @@ function UI.createToggleButton()
         Config.Settings.toggleButtonPosition = {
             point = point,
             x = xOfs,
-            y = yOfs,
+            y = yOfs
         }
     end)
 
@@ -280,362 +286,590 @@ function UI.createToggleButton()
 end
 
 -- Function to apply an icon texture representing the portal spell attributed to the button
-function UI.setIconSpellTexture(portalButton, portal)
-    if not portalButton.icon then
+function UI.setIconSpellTexture(actionButton, portal)
+    if not actionButton.icon then
         -- Apply the icon texture to the button
-        local icon = portalButton:CreateTexture(nil, "BACKGROUND")
+        local icon = actionButton:CreateTexture(nil, "BACKGROUND")
 
         icon:SetAllPoints()
 
-        portalButton.icon = icon
+        actionButton.icon = icon
     end
 
     -- If portal.matched === false, the player's destination did not match any known portal so disable the button
     if portal.matched then
         -- Enable the button
-        portalButton:SetEnabled(true)
+        actionButton:SetEnabled(true)
 
         -- Get the icon texture for the portal spell
         local iconTexture = GetSpellTexture(portal.spellID)
         if iconTexture then
             -- Set the icon texture for the portal spell
-            portalButton.icon:SetTexture(iconTexture)
+            actionButton.icon:SetTexture(iconTexture)
 
             -- Set the icon to full color
-            portalButton.icon:SetDesaturated(false)
+            actionButton.icon:SetDesaturated(false)
         else
             print("Error: Could not fetch icon for spell name " .. portal.spellName)
         end
     else
         -- Disable the button
-        portalButton:SetEnabled(false)
+        actionButton:SetEnabled(false)
 
         -- Set the icon to a question mark
-        portalButton.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
+        actionButton.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
         -- Grey it out
-        portalButton.icon:SetDesaturated(true)
+        actionButton.icon:SetDesaturated(true)
     end
 end
 
 function UI.setIconSpell(inviteData, destination)
-    -- Save the matching portal details to the invite tracker
-    inviteData.portal = Utils.getMatchingPortal(destination)
-
     -- Set up secure actions for casting the spell
-    inviteData.portalButton:SetAttribute("type", "spell")
-    inviteData.portalButton:SetAttribute("spell", inviteData.portal.spellName)
+    inviteData.actionButton:SetAttribute("type", "spell")
+    inviteData.actionButton:SetAttribute("spell", inviteData.portal.spellName)
 
     if Config.Settings.debugMode and inviteData.portal.matched then
         print("Setting icon spell for " .. destination)
     end
 
     -- Set the icon texture for the portal spell
-    UI.setIconSpellTexture(inviteData.portalButton, inviteData.portal)
+    UI.setIconSpellTexture(inviteData.actionButton, inviteData.portal)
 end
 
 function UI.setTradeIcon(inviteData)
-    if not inviteData.portalButton.icon then
-        -- Create the icon texture if it doesn't exist
-        local icon = inviteData.portalButton:CreateTexture(nil, "BACKGROUND")
-        icon:SetAllPoints()
-        inviteData.portalButton.icon = icon
+    -- If debug, log the action
+    if Config.Settings.debugMode then
+        print("Setting trade icon for " .. inviteData.name)
     end
 
-    -- Update the icon texture to a "trade" icon
-    inviteData.portalButton.icon:SetTexture("Interface\\Icons\\INV_Misc_Coin_01") -- Example trade icon
-    inviteData.portalButton.icon:SetDesaturated(false)
+    if not inviteData.actionButton.icon then
+        -- Create the icon texture if it doesn't exist
+        local icon = inviteData.actionButton:CreateTexture(nil, "BACKGROUND")
+        icon:SetAllPoints()
+        inviteData.actionButton.icon = icon
+    end
+    if inviteData.targetted then
+        -- Update the icon texture to a "trade" icons
+        inviteData.actionButton.icon:SetTexture("Interface\\Icons\\INV_Misc_Coin_01") -- Example trade icon
 
-    -- Enable the button and set the tooltip to inform the user that this button opens a trade window with the player
-    inviteData.portalButton:SetEnabled(true)
-    inviteData.portalButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:SetText("Now would be the time to trade " .. inviteData.fullName)
-        GameTooltip:Show()
-    end)
-    inviteData.portalButton:SetScript("OnLeave", function(self)
+        -- If the player is already targeted, enable /trade
+        inviteData.actionButton:SetAttribute("type", "macro")
+        inviteData.actionButton:SetAttribute("macrotext", "/trade")
+        inviteData.actionButton:SetEnabled(true)
+        inviteData.actionButton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+            GameTooltip:SetText("Click to trade with " .. inviteData.name)
+            GameTooltip:Show()
+        end)
+    else
+        -- Update the icon texture to a "target" icon (use hunter's mark)
+        inviteData.actionButton.icon:SetTexture("Interface\\Icons\\Ability_Hunter_SniperShot") -- Example target icon
+
+        -- Otherwise, clicking will target the player
+        inviteData.actionButton:SetAttribute("type", "macro")
+        inviteData.actionButton:SetAttribute("macrotext", "/target " .. inviteData.name)
+        inviteData.actionButton:SetEnabled(true)
+        inviteData.actionButton:SetScript("OnEnter", function(self)
+            GameTooltip:SetOwner(self, "ANCHOR_LEFT")
+            GameTooltip:SetText("Click to target " .. inviteData.name .. ". Then click again to trade.")
+            GameTooltip:Show()
+        end)
+    end
+
+    inviteData.actionButton.icon:SetDesaturated(false)
+
+    inviteData.actionButton:SetScript("OnLeave", function(self)
         GameTooltip:Hide()
     end)
 end
 
-function UI.setAllMatchingPortalButtonsToTrade(spellName)
+-- Helper to update ticketList from pendingInvites
+function UI.updateTicketList()
+    UI.ticketList = {}
+
     for sender, inviteData in pairs(Events.pendingInvites) do
-        if inviteData.portal and inviteData.portal.spellName and inviteData.portal.spellName:lower() == spellName:lower() and inviteData.portalButton then
-            UI.setTradeIcon(inviteData)
+        -- Only track tickets for users who have joined the party
+        if inviteData.hasJoined then
+            table.insert(UI.ticketList, sender)
         end
+    end
+
+    table.sort(UI.ticketList) -- Optional: sort alphabetically
+
+    UI.totalTickets = #UI.ticketList
+
+    if Config.Settings and Config.Settings.debugMode then
+        print("|cff87CEEB[Thic-Portals] Total ticket count updated: " .. tostring(UI.totalTickets))
     end
 end
 
-function UI.setAllMatchingTradeButtonsToPortal(spellName)
-    for sender, inviteData in pairs(Events.pendingInvites) do
-        if inviteData.portal and inviteData.portal.spellName and inviteData.portal.spellName:lower() == spellName:lower() and inviteData.portalButton then
-            UI.setIconSpell(inviteData, inviteData.destination)
+-- Function to update the ticket frame with the current ticket data
+function UI.updateTicketFrame()
+    -- This code will hide the ticket frame if there are no tickets
+    if #UI.ticketList == 0 then
+        if UI.ticketFrame then
+            UI.ticketFrame:Hide()
+        end
+        return
+    end
+
+    -- e.g. sender === "Thic"
+    local sender = UI.ticketList[UI.currentTicketIndex]
+    local inviteData = Events.pendingInvites[sender]
+
+    if not inviteData then
+        return
+    end
+
+    local destination = inviteData.destination or "Requesting..."
+
+    -- Update all relevant UI elements
+    UI.ticketFrame.senderValue:SetText(sender)
+    UI.ticketFrame.destinationValue:SetText(destination)
+    UI.ticketFrame.currentSender = sender -- Track which sender's distance is being displayed
+    Utils.updateDistanceLabel(sender, UI.ticketFrame.distanceLabel)
+    -- Update ticket index in title
+    if UI.ticketFrame.title then
+        UI.ticketFrame.title:SetText(
+            "TICKET (" .. tostring(UI.currentTicketIndex) .. "/" .. tostring(UI.totalTickets) .. ")")
+    end
+
+    -- Update original message if present (for message view)
+    if UI.ticketFrame.originalMessageValue and UI.ticketFrame.viewingMessage then
+        UI.ticketFrame.originalMessageValue:SetText(inviteData.originalMessage or "")
+    end
+
+    -- Enable/disable navigation buttons based on current index
+    if UI.ticketFrame.prevButton then
+        local prevEnabled = UI.currentTicketIndex > 1
+        UI.ticketFrame.prevButton:SetEnabled(prevEnabled)
+    end
+    if UI.ticketFrame.nextButton then
+        local nextEnabled = UI.currentTicketIndex < #UI.ticketList
+        local moreThanOneTicket = #UI.ticketList > 1
+        UI.ticketFrame.nextButton:SetEnabled(nextEnabled and moreThanOneTicket)
+    end
+
+    -- Print the current alive portals
+    if Config.Settings.debugMode then
+        print("|cff87CEEB[Thic-Portals] Current alive portals:")
+        for spellName, cast in pairs(Config.CurrentAlivePortals or {}) do
+            print("LIVE PORTAL: " .. spellName .. ": " .. tostring(cast))
         end
     end
-end
 
--- Function to create and show the ticket window
-function UI.showTicketWindow(sender, destination)
-    -- Create the main frame
-    local ticketFrame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
-    ticketFrame:SetSize(220, 250) -- Initial size
-    ticketFrame:SetPoint("CENTER", UIParent, "CENTER", UIParent:GetWidth() * 0.3, 0)
-    ticketFrame:SetBackdrop({
-        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
-        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
-        tile = true, tileSize = 32, edgeSize = 32,
-        insets = { left = 11, right = 12, top = 12, bottom = 11 }
-    })
-    ticketFrame:SetBackdropColor(0, 0, 0, 1)
-    ticketFrame:EnableMouse(true)
-    ticketFrame:SetMovable(true)
-    ticketFrame:RegisterForDrag("LeftButton")
-    ticketFrame:SetScript("OnDragStart", ticketFrame.StartMoving)
-    ticketFrame:SetScript("OnDragStop", ticketFrame.StopMovingOrSizing)
+    -- Save the matching portal details to the invite tracker
+    inviteData.portal = Utils.getMatchingPortal(destination) -- Set the portal button icon based on the invite data
 
-    -- Create the close button
-    local closeButton = CreateFrame("Button", nil, ticketFrame, "UIPanelCloseButton")
-    closeButton:SetPoint("TOPRIGHT", -5, -5)
-    closeButton:SetScript("OnClick", function()
-        ticketFrame:Hide()
-    end)
-
-    -- Create a container frame for labels
-    local labelContainer = CreateFrame("Frame", nil, ticketFrame)
-    labelContainer:SetSize(200, 100) -- Adjust size to fit labels
-    labelContainer:SetPoint("TOP", ticketFrame, "TOP", 0, -10) -- Position inside ticketFrame
-
-    -- Make the frame moveable
-    local title = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    title:SetPoint("TOP", 0, -20)
-    title:SetText("NEW TICKET")
-
-    -- Create the sender label
-    local senderLabel = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    senderLabel:SetPoint("TOPLEFT", 20, -50)
-    senderLabel:SetText("Player:")
-
-    -- Create the sender value
-    local senderValue = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    senderValue:SetPoint("LEFT", senderLabel, "RIGHT", 5, 0)
-    senderValue:SetText(sender)
-
-    -- Create the destination label
-    local destinationLabel = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    destinationLabel:SetPoint("TOPLEFT", senderLabel, "BOTTOMLEFT", 0, -10)
-    destinationLabel:SetText("Destination:")
-
-    -- Create the destination value
-    local destinationValue = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    destinationValue:SetPoint("LEFT", destinationLabel, "RIGHT", 5, 0)
-    destinationValue:SetText(destination or "Requesting...")
-
-    -- Create the distance label
-    local distanceLabel = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    distanceLabel:SetPoint("TOPLEFT", destinationLabel, "BOTTOMLEFT", 0, -10)
-    distanceLabel:SetText("Distance: N/A")
-
-    -- Update the distance label
-    Utils.updateDistanceLabel(sender, distanceLabel)
-
-    -- Create a button to start casting the portal creation spell that's relevant for this ticket (e.g., Portal: Stormwind)
-    local portalButton = CreateFrame("Button", nil, ticketFrame, "SecureActionButtonTemplate")
-
-    portalButton:SetSize(64, 64) -- Adjust size for icon display
-    portalButton:SetPoint("TOP", labelContainer, "BOTTOM", 0, -20)
-
-    -- attach it to the player object for reference
-    Events.pendingInvites[sender].portalButton = portalButton
-
-    -- Set the icon texture for the portal spell
-    UI.setIconSpell(Events.pendingInvites[sender], destination)
-
-    -- If the portal is already created (check the Config.CurrentAlivePortals table), set the icon to a trade icon
-    if Events.pendingInvites[sender].portal and Events.pendingInvites[sender].portal.matched and Config.CurrentAlivePortals[Events.pendingInvites[sender].portal.spellName] then
-        UI.setTradeIcon(Events.pendingInvites[sender])
+    -- Only hide the portal/trade icon if the user has travelled (not just paid)
+    if Config.CurrentAlivePortals and Config.CurrentAlivePortals[inviteData.portal.spellName] then
+        UI.setTradeIcon({
+            actionButton = UI.ticketFrame.actionButton,
+            name = inviteData.name,
+            targetted = inviteData.targetted
+        })
+    else
+        UI.setIconSpell({
+            actionButton = UI.ticketFrame.actionButton,
+            portal = inviteData.portal
+        }, destination)
     end
 
-    -- Create the remove button
-    local removeButton = CreateFrame("Button", nil, ticketFrame, "UIPanelButtonTemplate")
-    removeButton:SetSize(80, 22)
-    removeButton:SetPoint("TOP", portalButton, "BOTTOM", 0, -10)
-    removeButton:SetText("Remove")
+    -- Remove Button
+    local removeButton = UI.ticketFrame.removeButton
     removeButton:SetEnabled(false)
     removeButton:SetScript("OnClick", function()
         UninviteUnit(sender)
+
         if Config.Settings.debugMode then
             print("|cff87CEEB[Thic-Portals]|r " .. sender .. " has been removed from the party.")
         end
+
         Events.pendingInvites[sender] = nil
-        ticketFrame:Hide()
+
+        UI.updateTicketList()
+
+        if #UI.ticketList == 0 then
+            UI.ticketFrame:Hide()
+        else
+            if UI.currentTicketIndex > #UI.ticketList then
+                UI.currentTicketIndex = #UI.ticketList
+            end
+            UI.updateTicketFrame()
+        end
     end)
 
-    -- Variables for managing "Complete TICK" elements
-    local ticker, completeText, tickIcon
+    local function showRemoveAndClearActionButton()
+        -- Show the remove button
+        if UI.ticketFrame.removeButton then
+            UI.ticketFrame.removeButton:Show()
+            UI.ticketFrame.removeButton:SetEnabled(true)
+        end
 
-    -- Function to show "Complete TICK" and hide unnecessary elements
-    local function showCompleteTick()
-        destinationLabel:Hide()
-        destinationValue:Hide()
-        distanceLabel:Hide()
-        portalButton:Hide()
+        -- Clear the action button icon and disable it
+        if UI.ticketFrame.actionButton.icon then
+            UI.ticketFrame.actionButton.icon:Hide()
+        end
+        UI.ticketFrame.actionButton:SetEnabled(false)
+    end
 
-        completeText = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    -- Show/hide Paid/Complete TICK based on status
+    if inviteData.travelled then
+        -- Show Complete TICK
+        if UI.ticketFrame.completeText then
+            UI.ticketFrame.completeText:Show()
+        end
+        if UI.ticketFrame.tickIcon then
+            UI.ticketFrame.tickIcon:Show()
+        end
+        -- Hide Paid TICK if it was showing
+        if UI.ticketFrame.paidText then
+            UI.ticketFrame.paidText:Hide()
+        end
+        if UI.ticketFrame.paidCoinIcon then
+            UI.ticketFrame.paidCoinIcon:Hide()
+        end
+
+        showRemoveAndClearActionButton()
+    elseif inviteData.hasPaid then
+        -- Show Paid TICK if trade is complete but not travelled yet
+        if UI.ticketFrame.paidText then
+            UI.ticketFrame.paidText:Show()
+        end
+        if UI.ticketFrame.paidCoinIcon then
+            UI.ticketFrame.paidCoinIcon:Show()
+        end
+    else
+        -- Hide Paid/Complete TICK if not paid or travelled
+        if UI.ticketFrame.completeText then
+            UI.ticketFrame.completeText:Hide()
+        end
+        if UI.ticketFrame.tickIcon then
+            UI.ticketFrame.tickIcon:Hide()
+        end
+        if UI.ticketFrame.paidText then
+            UI.ticketFrame.paidText:Hide()
+        end
+        if UI.ticketFrame.paidCoinIcon then
+            UI.ticketFrame.paidCoinIcon:Hide()
+        end
+
+        -- Show portal icon and enable portal button
+        if UI.ticketFrame.actionButton.icon then
+            UI.ticketFrame.actionButton.icon:Show()
+        end
+        UI.ticketFrame.actionButton:SetEnabled(true)
+    end
+
+    -- Ticker for dynamic updates (when a user trades gold or travels), only run this if we are not travelled
+    if not inviteData.travelled then
+        -- Cancel previous ticker if any
+        if currentTicker then
+            currentTicker:Cancel()
+        end
+
+        currentTicker = C_Timer.NewTicker(1, function()
+            if Events.pendingInvites[sender] and Events.pendingInvites[sender].travelled then
+                -- Show Complete TICK
+                if UI.ticketFrame.completeText then
+                    UI.ticketFrame.completeText:Show()
+                end
+                if UI.ticketFrame.tickIcon then
+                    UI.ticketFrame.tickIcon:Show()
+                end
+                -- Hide Paid TICK if it was showing
+                if UI.ticketFrame.paidText then
+                    UI.ticketFrame.paidText:Hide()
+                end
+                if UI.ticketFrame.paidCoinIcon then
+                    UI.ticketFrame.paidCoinIcon:Hide()
+                end
+
+                showRemoveAndClearActionButton()
+
+                -- Cancel the tracker since the transaction is done
+                if currentTicker then
+                    currentTicker:Cancel()
+                end
+            elseif Events.pendingInvites[sender] and Events.pendingInvites[sender].hasPaid then
+                -- Show Paid TICK if trade is complete but not travelled yet
+                if UI.ticketFrame.paidText then
+                    UI.ticketFrame.paidText:Show()
+                end
+                if UI.ticketFrame.paidCoinIcon then
+                    UI.ticketFrame.paidCoinIcon:Show()
+                end
+            end
+        end, 180)
+    end
+end
+
+-- Function to show the paginated ticket window
+function UI.showPaginatedTicketWindow()
+    UI.updateTicketList()
+
+    if #UI.ticketList == 0 then
+        return
+    end
+    if not UI.ticketFrame then
+        -- Create the main frame (only once)
+        local ticketFrame = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
+        ticketFrame:SetSize(220, 270)
+        ticketFrame:SetPoint("CENTER", UIParent, "CENTER", UIParent:GetWidth() * 0.3, 0)
+        ticketFrame:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true,
+            tileSize = 32,
+            edgeSize = 32,
+            insets = {
+                left = 11,
+                right = 12,
+                top = 12,
+                bottom = 11
+            }
+        })
+        ticketFrame:SetBackdropColor(0, 0, 0, 1)
+        ticketFrame:EnableMouse(true)
+        ticketFrame:SetMovable(true)
+        ticketFrame:RegisterForDrag("LeftButton")
+        ticketFrame:SetScript("OnDragStart", ticketFrame.StartMoving)
+        ticketFrame:SetScript("OnDragStop", ticketFrame.StopMovingOrSizing)
+
+        -- Close button
+        local closeButton = CreateFrame("Button", nil, ticketFrame, "UIPanelCloseButton")
+        closeButton:SetPoint("TOPRIGHT", -5, -5)
+        closeButton:SetScript("OnClick", function()
+            ticketFrame:Hide()
+        end)
+
+        -- Container for labels
+        local labelContainer = CreateFrame("Frame", nil, ticketFrame)
+        labelContainer:SetSize(200, 100)
+        labelContainer:SetPoint("TOP", ticketFrame, "TOP", 0, -10)
+
+        local title = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        title:SetPoint("TOP", 0, -20)
+        title:SetText("TICKET (" .. tostring(UI.currentTicketIndex) .. "/" .. tostring(UI.totalTickets) .. ")")
+        ticketFrame.title = title
+
+        local senderLabel = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        senderLabel:SetPoint("TOPLEFT", 20, -50)
+        senderLabel:SetText("Player:")
+        local senderValue = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        senderValue:SetPoint("LEFT", senderLabel, "RIGHT", 5, 0)
+        ticketFrame.senderValue = senderValue
+
+        local destinationLabel = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        destinationLabel:SetPoint("TOPLEFT", senderLabel, "BOTTOMLEFT", 0, -10)
+        destinationLabel:SetText("Destination:")
+        local destinationValue = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        destinationValue:SetPoint("LEFT", destinationLabel, "RIGHT", 5, 0)
+        ticketFrame.destinationValue = destinationValue
+
+        local distanceLabel = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        distanceLabel:SetPoint("TOPLEFT", destinationLabel, "BOTTOMLEFT", 0, -10)
+        distanceLabel:SetText("Distance: N/A")
+        ticketFrame.distanceLabel = distanceLabel
+
+        -- Add an icon to the top left that allows us to switch to a "display original message mode"
+        local iconButton = CreateFrame("Button", nil, ticketFrame)
+        iconButton:SetSize(20, 20)
+        iconButton:SetPoint("TOPLEFT", 12, -12)
+        iconButton:SetNormalTexture("Interface\\Icons\\INV_Letter_15")
+        iconButton:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+        ticketFrame.iconButton = iconButton
+
+        -- Optional: original message
+        local originalMessageValue = labelContainer:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        originalMessageValue:SetPoint("TOPLEFT", distanceLabel, "BOTTOMLEFT", 0, -20) -- Add more space below message
+        originalMessageValue:SetWidth(180)
+        originalMessageValue:SetJustifyH("LEFT")
+        originalMessageValue:SetWordWrap(true)
+        ticketFrame.originalMessageValue = originalMessageValue
+
+        -- Portal Button
+        local actionButton = CreateFrame("Button", nil, ticketFrame, "SecureActionButtonTemplate")
+        actionButton:SetSize(64, 64)
+        actionButton:SetPoint("TOP", labelContainer, "BOTTOM", 0, -20) -- Add more space above portal icon
+        ticketFrame.actionButton = actionButton
+
+        -- Complete TICK
+        local completeText = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
         completeText:SetPoint("CENTER", -10, -10)
         completeText:SetText("Complete")
-
-        tickIcon = ticketFrame:CreateTexture(nil, "ARTWORK")
+        completeText:Hide()
+        ticketFrame.completeText = completeText
+        local tickIcon = ticketFrame:CreateTexture(nil, "ARTWORK")
         tickIcon:SetTexture("Interface\\RAIDFRAME\\ReadyCheck-Ready")
         tickIcon:SetPoint("LEFT", completeText, "RIGHT", 5, 0)
         tickIcon:SetSize(20, 20)
+        tickIcon:Hide()
+        ticketFrame.tickIcon = tickIcon
 
-        ticketFrame:SetHeight(190)
+        -- Remove Button
+        local removeButton = CreateFrame("Button", nil, ticketFrame, "UIPanelButtonTemplate")
+        removeButton:SetSize(80, 22)
+        removeButton:SetPoint("TOP", actionButton, "BOTTOM", 0, -10) -- Add more space below portal icon
+        removeButton:SetText("Remove")
+        ticketFrame.removeButton = removeButton
 
-        removeButton:ClearAllPoints()
-        removeButton:SetPoint("TOP", completeText, "BOTTOM", 5, -30) -- Positioned below "Complete" with a gap
-        removeButton:Show()
-    end
+        -- Paid TICK
+        local paidText = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        paidText:SetPoint("BOTTOM", ticketFrame, "BOTTOM", -10, 22)
+        paidText:SetText("Paid")
+        paidText:Hide()
+        ticketFrame.paidText = paidText
+        local paidCoinIcon = ticketFrame:CreateTexture(nil, "ARTWORK")
+        paidCoinIcon:SetTexture("Interface\\Icons\\INV_Misc_Coin_17") -- SOD Gold coin icon
+        paidCoinIcon:SetPoint("LEFT", paidText, "RIGHT", 5, 0)
+        paidCoinIcon:SetSize(20, 20)
+        paidCoinIcon:Hide()
+        ticketFrame.paidCoinIcon = paidCoinIcon
 
-    -- Function to hide "Complete TICK"
-    local function hideCompleteTick()
-        if completeText then completeText:Hide() end
-        if tickIcon then tickIcon:Hide() end
-    end
-
-    local viewingMessage = false
-    local originalMessageLabel = nil
-    local originalMessageValue = nil
-
-    -- Add an icon to the top left that allows us to switch to a "display original message mode"
-    local iconButton = CreateFrame("Button", nil, ticketFrame)
-    iconButton:SetSize(20, 20)
-    iconButton:SetPoint("TOPLEFT", 12, -12)
-    iconButton:SetNormalTexture("Interface\\Icons\\INV_Letter_15")
-    iconButton:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
-
-    function toggleMessageView()
-        if not viewingMessage then
-            if Config.Settings.debugMode then
-                print("Toggling to message view")
+        -- Navigation buttons
+        local prevButton = CreateFrame("Button", nil, ticketFrame, "UIPanelButtonTemplate")
+        prevButton:SetSize(32, 32)
+        prevButton:SetPoint("BOTTOMLEFT", 12, 12)
+        prevButton:SetNormalTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Up")
+        prevButton:SetPushedTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Down")
+        prevButton:SetDisabledTexture("Interface\\Buttons\\UI-SpellbookIcon-PrevPage-Disabled")
+        prevButton:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+        prevButton:SetScript("OnClick", function()
+            if UI.currentTicketIndex > 1 then
+                UI.currentTicketIndex = UI.currentTicketIndex - 1
+                UI.updateTicketFrame()
             end
+        end)
+        ticketFrame.prevButton = prevButton
 
-            viewingMessage = true
-
-            -- Change the icon to a back icon that will return us to the original view on click
-            iconButton:SetNormalTexture("Interface\\Icons\\achievement_bg_returnxflags_def_wsg")
-
-            -- Hide the destination label and value
-            destinationLabel:Hide()
-            destinationValue:Hide()
-            -- Hide the distance label
-            distanceLabel:Hide()
-            -- Hide the remove button
-            removeButton:Hide()
-            -- Hide the portal button
-            portalButton:Hide()
-
-            -- Create a label for the original message
-            originalMessageLabel = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            originalMessageLabel:SetPoint("TOPLEFT", senderLabel, "BOTTOMLEFT", 0, -10)
-            originalMessageLabel:SetText("Original Message:")
-
-            if Events.pendingInvites[sender] then
-                -- Create a font string to calculate the height required
-                originalMessageValue = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-                local requiredHeight = Utils.calculateTextHeight(originalMessageValue, Events.pendingInvites[sender].originalMessage, 180)
-
-                -- Adjust the frame height based on the required height
-                local newHeight = 180 - 40 + requiredHeight  -- Base height + required height
-                ticketFrame:SetHeight(newHeight)
-
-                -- Display the original message
-                originalMessageValue:SetPoint("TOPLEFT", originalMessageLabel, "BOTTOMLEFT", 0, -10)
-                originalMessageValue:SetWidth(180)
-                originalMessageValue:SetJustifyH("LEFT")
-                originalMessageValue:SetText(Events.pendingInvites[sender].originalMessage)
-                originalMessageValue:SetWordWrap(true)
+        local nextButton = CreateFrame("Button", nil, ticketFrame, "UIPanelButtonTemplate")
+        nextButton:SetSize(32, 32)
+        nextButton:SetPoint("BOTTOMRIGHT", -12, 12)
+        nextButton:SetNormalTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Up")
+        nextButton:SetPushedTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Down")
+        nextButton:SetDisabledTexture("Interface\\Buttons\\UI-SpellbookIcon-NextPage-Disabled")
+        nextButton:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+        nextButton:SetScript("OnClick", function()
+            if UI.currentTicketIndex < #UI.ticketList then
+                UI.currentTicketIndex = UI.currentTicketIndex + 1
+                UI.updateTicketFrame()
             end
-        else
-            if Config.Settings.debugMode then
-                print("Toggling back to original view")
+        end)
+        ticketFrame.nextButton = nextButton
+
+        -- Message view state
+        ticketFrame.viewingMessage = false
+        ticketFrame.originalMessageLabel = nil
+        ticketFrame.originalMessageValue = nil
+
+        local function toggleMessageView()
+            if not ticketFrame.viewingMessage then
+                if Config.Settings.debugMode then
+                    print("Toggling to message view")
+                end
+                ticketFrame.viewingMessage = true
+                iconButton:SetNormalTexture("Interface\\Icons\\achievement_bg_returnxflags_def_wsg")
+
+                -- Hide main info
+                senderLabel:Hide()
+                senderValue:Hide()
+                destinationLabel:Hide()
+                destinationValue:Hide()
+                distanceLabel:Hide()
+
+                -- Hide action button
+                actionButton:Hide()
+                -- Hide remove button
+                removeButton:Hide()
+
+                -- Show message label
+                ticketFrame.originalMessageLabel = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                ticketFrame.originalMessageLabel:SetPoint("TOPLEFT", ticketFrame, "TOPLEFT", 30, -70)
+                ticketFrame.originalMessageLabel:SetText("Original Message:")
+                ticketFrame.originalMessageValue = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+                ticketFrame.originalMessageValue:SetPoint("TOPLEFT", ticketFrame.originalMessageLabel, "BOTTOMLEFT", 0,
+                    -10)
+                ticketFrame.originalMessageValue:SetWidth(180)
+                ticketFrame.originalMessageValue:SetJustifyH("LEFT")
+                ticketFrame.originalMessageValue:SetWordWrap(true)
+                local sender = UI.ticketList[UI.currentTicketIndex]
+                local inviteData = Events.pendingInvites[sender]
+                ticketFrame.originalMessageValue:SetText(inviteData and inviteData.originalMessage or "")
+
+                -- Show Complete TICK
+                if UI.ticketFrame.completeText then
+                    UI.ticketFrame.completeText:Hide()
+                end
+                if UI.ticketFrame.tickIcon then
+                    UI.ticketFrame.tickIcon:Hide()
+                end
+            else
+                if Config.Settings.debugMode then
+                    print("Toggling back to original view")
+                end
+                ticketFrame.viewingMessage = false
+                iconButton:SetNormalTexture("Interface\\Icons\\INV_Letter_15")
+
+                -- Show main info
+                senderLabel:Show()
+                senderValue:Show()
+                destinationLabel:Show()
+                destinationValue:Show()
+                distanceLabel:Show()
+
+                -- Show action button
+                actionButton:Show()
+
+                -- Hide message label
+                if ticketFrame.originalMessageLabel then
+                    ticketFrame.originalMessageLabel:Hide()
+                end
+                if ticketFrame.originalMessageValue then
+                    ticketFrame.originalMessageValue:Hide()
+                end
+
+                if Events.pendingInvites[sender] and Events.pendingInvites[sender].travelled then
+                    -- Show Complete TICK
+                    if UI.ticketFrame.completeText then
+                        UI.ticketFrame.completeText:Show()
+                    end
+                    if UI.ticketFrame.tickIcon then
+                        UI.ticketFrame.tickIcon:Show()
+                    end
+                end
+
+                -- Update ticket frame to ensure correct paid/complete status is shown
+                UI.updateTicketFrame()
             end
-
-            viewingMessage = false
-
-            -- Change the icon back to the original icon
-            iconButton:SetNormalTexture("Interface\\Icons\\INV_Letter_15")
-
-            -- Reset the frame size to its original dimensions
-            ticketFrame:SetHeight(250)
-
-            -- Show the destination label and value
-            destinationLabel:Show()
-            destinationValue:Show()
-            -- Show the distance label
-            distanceLabel:Show()
-            -- Show the remove button
-            removeButton:Show()
-            -- Show the portal button
-            portalButton:Show()
-            -- Hide the original message label and value
-            originalMessageLabel:Hide()
-            originalMessageValue:Hide()
         end
+
+        iconButton:SetScript("OnClick", toggleMessageView)
+        ticketFrame.toggleMessageView = toggleMessageView
+
+        UI.ticketFrame = ticketFrame
+        UI.currentTicketIndex = 1 -- Only set to 1 when frame is first created
     end
 
-    iconButton:SetScript("OnClick", toggleMessageView)
-
-    -- Enable the remove button when the player has traveled
-    ticker = C_Timer.NewTicker(1, function()
-        if Events.pendingInvites[sender] and Events.pendingInvites[sender].travelled then
-            -- If we're currently viewing the message screen, switch back to the original view
-            if viewingMessage then
-                toggleMessageView()
-            end
-
-            -- Update to show "Complete TICK"
-            showCompleteTick()
-            -- Enable the remove button
-            removeButton:SetEnabled(true)
-            -- Disable the icon button
-            iconButton:SetEnabled(false)
-            -- Cancel the ticker
-            ticker:Cancel()
-        end
-    end, 180)
-
-    -- Store reference to the destinationValue in Events.pendingInvites
-    if Events.pendingInvites[sender] then
-        Events.pendingInvites[sender].destinationValue = destinationValue
-        Events.pendingInvites[sender].ticketFrame = ticketFrame
-    end
-
-    -- Show the frame
-    ticketFrame:Show()
+    UI.ticketFrame:Show()
+    UI.updateTicketFrame()
 end
 
 -- Function to draw gold statistics to the ticket frame
 function UI.drawGoldStatisticsToTicketFrame()
     if UI.totalGoldLabel and UI.dailyGoldLabel and UI.totalTradesLabel then
         -- Update the total gold label
-        UI.totalGoldLabel.children[3]:SetText(string.format(
-            "%dg %ds %dc",
-            math.floor(Config.Settings.totalGold / 10000),
-            math.floor((Config.Settings.totalGold % 10000) / 100),
-            Config.Settings.totalGold % 100
-        ))
+        UI.totalGoldLabel.children[3]:SetText(string.format("%dg %ds %dc",
+            math.floor(Config.Settings.totalGold / 10000), math.floor((Config.Settings.totalGold % 10000) / 100),
+            Config.Settings.totalGold % 100))
 
         -- Update the daily gold label
-        UI.dailyGoldLabel.children[3]:SetText(string.format(
-            "%dg %ds %dc",
-            math.floor(Config.Settings.dailyGold / 10000),
-            math.floor((Config.Settings.dailyGold % 10000) / 100),
-            Config.Settings.dailyGold % 100
-        ))
+        UI.dailyGoldLabel.children[3]:SetText(string.format("%dg %ds %dc",
+            math.floor(Config.Settings.dailyGold / 10000), math.floor((Config.Settings.dailyGold % 10000) / 100),
+            Config.Settings.dailyGold % 100))
 
         -- Update the total trades label
-        UI.totalTradesLabel.children[3]:SetText(
-            Config.Settings.totalTradesCompleted
-        )
+        UI.totalTradesLabel.children[3]:SetText(Config.Settings.totalTradesCompleted)
     end
 end
 
@@ -726,30 +960,30 @@ local function createKeywordSection(scroll, titleText, keywordTable, keywordTabl
     keywordGroup:AddChild(editBox)
 
     -- Add Button
-    local addButton = AceGUI:Create("Button")
-    addButton:SetText("Add")
-    addButton:SetWidth(100)
-    addButton:SetCallback("OnClick", function()
+    local addKeywordButton = AceGUI:Create("Button")
+    addKeywordButton:SetText("Add")
+    addKeywordButton:SetWidth(100)
+    addKeywordButton:SetCallback("OnClick", function()
         local keyword = editBox:GetText()
         if keyword ~= "" then
             addFunc(keyword)
             editBox:SetText("")
         end
     end)
-    keywordGroup:AddChild(addButton)
+    keywordGroup:AddChild(addKeywordButton)
 
     -- Remove Button
-    local removeButton = AceGUI:Create("Button")
-    removeButton:SetText("Remove")
-    removeButton:SetWidth(100)
-    removeButton:SetCallback("OnClick", function()
+    local removeKeywordButton = AceGUI:Create("Button")
+    removeKeywordButton:SetText("Remove")
+    removeKeywordButton:SetWidth(100)
+    removeKeywordButton:SetCallback("OnClick", function()
         local keyword = editBox:GetText()
         if keyword ~= "" then
             removeFunc(keyword)
             editBox:SetText("")
         end
     end)
-    keywordGroup:AddChild(removeButton)
+    keywordGroup:AddChild(removeKeywordButton)
 
     -- Internal panel for user list with padding
     userListGroup:SetFullWidth(true)
@@ -781,7 +1015,9 @@ function UI.createOptionsPanel()
     tinsert(UISpecialFrames, "ThicPortalsOptionsPanel")
 
     optionsPanel:SetTitle("Thic-Portals Service Configuration")
-    optionsPanel:SetCallback("OnClose", function(widget) Config.Settings.optionsPanelHidden = true end)
+    optionsPanel:SetCallback("OnClose", function(widget)
+        Config.Settings.optionsPanelHidden = true
+    end)
     optionsPanel:SetLayout("Fill")
     optionsPanel:SetWidth(480)
 
@@ -824,69 +1060,80 @@ function UI.createOptionsPanel()
     checkboxGroup:SetLayout("Flow")
 
     -- Addon On/Off Checkbox
-    addCheckbox(checkboxGroup, "Enable Addon", UI.addonEnabledCheckbox, Config.Settings.addonEnabled, function(_, _, value)
-        UI.toggleAddonEnabledState()
-    end, "Enables or disables the addon functionality entirely.")
+    addCheckbox(checkboxGroup, "Enable Addon", UI.addonEnabledCheckbox, Config.Settings.addonEnabled,
+        function(_, _, value)
+            UI.toggleAddonEnabledState()
+        end, "Enables or disables the addon functionality entirely.")
 
     -- Global Channels On/Off Checkbox
-    addCheckbox(checkboxGroup, "Disable Global Channels", UI.disableGlobalChannelsCheckbox, Config.Settings.disableGlobalChannels, function(_, _, value)
-        Config.Settings.disableGlobalChannels = value
-        if Config.Settings.disableGlobalChannels then
-            print("|cff87CEEB[Thic-Portals]|r Global channels disabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r Global channels enabled.")
-        end
-    end, "Enables or disables the addon from listening to global channels for requests.")
+    addCheckbox(checkboxGroup, "Disable Global Channels", UI.disableGlobalChannelsCheckbox,
+        Config.Settings.disableGlobalChannels, function(_, _, value)
+            Config.Settings.disableGlobalChannels = value
+            if Config.Settings.disableGlobalChannels then
+                print("|cff87CEEB[Thic-Portals]|r Global channels disabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Global channels enabled.")
+            end
+        end, "Enables or disables the addon from listening to global channels for requests.")
 
     -- Approach Mode Checkbox
-    addCheckbox(checkboxGroup, "Approach Mode", UI.approachModeCheckbox, Config.Settings.ApproachMode, function(_, _, value)
-        Config.Settings.ApproachMode = value
-        if Config.Settings.ApproachMode then
-            print("|cff87CEEB[Thic-Portals]|r Approach mode enabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r Approach mode disabled.")
-        end
-    end, "When enabled, the addon will require only a destination value to be provided in either a say/whisper.")
+    addCheckbox(checkboxGroup, "Approach Mode", UI.approachModeCheckbox, Config.Settings.ApproachMode,
+        function(_, _, value)
+            Config.Settings.ApproachMode = value
+            if Config.Settings.ApproachMode then
+                print("|cff87CEEB[Thic-Portals]|r Approach mode enabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Approach mode disabled.")
+            end
+        end, "When enabled, the addon will require only a destination value to be provided in either a say/whisper.")
 
     -- Enable Food and Water Support Checkbox
-    addCheckbox(checkboxGroup, "Food and Water Support", UI.enableFoodWaterSupportCheckbox, Config.Settings.enableFoodWaterSupport, function(_, _, value)
-        Config.Settings.enableFoodWaterSupport = value
-        if Config.Settings.enableFoodWaterSupport then
-            print("|cff87CEEB[Thic-Portals]|r Food and Water support enabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r Food and Water support disabled.")
-        end
-    end, "Enables or disables the ability to sell food and water items through the portal service. Food and water will be advertised to relevant customers depending on stock levels.")
+    addCheckbox(checkboxGroup, "Food and Water Support", UI.enableFoodWaterSupportCheckbox,
+        Config.Settings.enableFoodWaterSupport, function(_, _, value)
+            Config.Settings.enableFoodWaterSupport = value
+            if Config.Settings.enableFoodWaterSupport then
+                print("|cff87CEEB[Thic-Portals]|r Food and Water support enabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Food and Water support disabled.")
+            end
+        end,
+        "Enables or disables the ability to sell food and water items through the portal service. Food and water will be advertised to relevant customers depending on stock levels.")
 
     -- Disable smart matching and use only common phrase matching
-    addCheckbox(checkboxGroup, "Only Use Common Phrase Matching", UI.disableSmartMatchingCheckbox, Config.Settings.disableSmartMatching, function(_, _, value)
-        Config.Settings.disableSmartMatching = value
-        if Config.Settings.disableSmartMatching then
-            print("|cff87CEEB[Thic-Portals]|r Smart matching disabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r Smart matching enabled.")
-        end
-    end, "Disables advanced smart matching algorithms and only uses the predefined common phrases to match requests (configurable below).")
+    addCheckbox(checkboxGroup, "Only Use Common Phrase Matching", UI.disableSmartMatchingCheckbox,
+        Config.Settings.disableSmartMatching, function(_, _, value)
+            Config.Settings.disableSmartMatching = value
+            if Config.Settings.disableSmartMatching then
+                print("|cff87CEEB[Thic-Portals]|r Smart matching disabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Smart matching enabled.")
+            end
+        end,
+        "Disables advanced smart matching algorithms and only uses the predefined common phrases to match requests (configurable below).")
 
     -- Don't use realm when inviting
-    addCheckbox(checkboxGroup, "Remove Realm Affix From Invite Command", UI.removeRealmFromInviteCommandCheckbox, Config.Settings.removeRealmFromInviteCommand, function(_, _, value)
-        Config.Settings.removeRealmFromInviteCommand = value
-        if Config.Settings.removeRealmFromInviteCommand then
-            print("|cff87CEEB[Thic-Portals]|r Smart matching disabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r Smart matching enabled.")
-        end
-    end, "When enabled, removes the realm name e.g. '-Ashbringer' from invite commands, making invites suitable for certain single realm servers.")
+    addCheckbox(checkboxGroup, "Remove Realm Affix From Invite Command", UI.removeRealmFromInviteCommandCheckbox,
+        Config.Settings.removeRealmFromInviteCommand, function(_, _, value)
+            Config.Settings.removeRealmFromInviteCommand = value
+            if Config.Settings.removeRealmFromInviteCommand then
+                print("|cff87CEEB[Thic-Portals]|r Smart matching disabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Smart matching enabled.")
+            end
+        end,
+        "When enabled, removes the realm name e.g. '-Ashbringer' from invite commands, making invites suitable for certain single realm servers.")
 
     -- AFK Protection Checkbox
-    addCheckbox(checkboxGroup, "Disable AFK Protection", UI.disableAFKProtectionCheckbox, Config.Settings.disableAFKProtection, function(_, _, value)
-        Config.Settings.disableAFKProtection = value
-        if Config.Settings.disableAFKProtection then
-            print("|cff87CEEB[Thic-Portals]|r AFK protection disabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r AFK protection enabled.")
-        end
-    end, "Disables the AFK protection feature which is in place to prevent potentially over-inviting players if the user forgets the addon is running. Two players in a row leaving the party without payment triggers shop close.")
+    addCheckbox(checkboxGroup, "Disable AFK Protection", UI.disableAFKProtectionCheckbox,
+        Config.Settings.disableAFKProtection, function(_, _, value)
+            Config.Settings.disableAFKProtection = value
+            if Config.Settings.disableAFKProtection then
+                print("|cff87CEEB[Thic-Portals]|r AFK protection disabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r AFK protection enabled.")
+            end
+        end,
+        "Disables the AFK protection feature which is in place to prevent potentially over-inviting players if the user forgets the addon is running. Two players in a row leaving the party without payment triggers shop close.")
 
     -- Hide Icon Checkbox
     addCheckbox(checkboxGroup, "Hide Icon", UI.hideIconCheckbox, Config.Settings.hideIcon, function(_, _, value)
@@ -901,24 +1148,26 @@ function UI.createOptionsPanel()
     end, "Hides or shows the toggle button on the screen. You can use '/Tp show' to reveal the hidden icon again.")
 
     -- Sound On/Off Checkbox
-    addCheckbox(checkboxGroup, "Enable Sound", UI.soundEnabledCheckbox, Config.Settings.soundEnabled, function(_, _, value)
-        Config.Settings.soundEnabled = value
-        if Config.Settings.soundEnabled then
-            print("|cff87CEEB[Thic-Portals]|r Sound enabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r Sound disabled.")
-        end
-    end, "Enables or disables sound notifications.")
+    addCheckbox(checkboxGroup, "Enable Sound", UI.soundEnabledCheckbox, Config.Settings.soundEnabled,
+        function(_, _, value)
+            Config.Settings.soundEnabled = value
+            if Config.Settings.soundEnabled then
+                print("|cff87CEEB[Thic-Portals]|r Sound enabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Sound disabled.")
+            end
+        end, "Enables or disables sound notifications.")
 
     -- Debug Mode Checkbox
-    addCheckbox(checkboxGroup, "Enable Debug Mode", UI.debugModeCheckbox, Config.Settings.debugMode, function(_, _, value)
-        Config.Settings.debugMode = value
-        if Config.Settings.debugMode then
-            print("|cff87CEEB[Thic-Portals]|r Debug mode enabled.")
-        else
-            print("|cff87CEEB[Thic-Portals]|r Debug mode disabled.")
-        end
-    end, "Toggles debug mode for additional console logging.")
+    addCheckbox(checkboxGroup, "Enable Debug Mode", UI.debugModeCheckbox, Config.Settings.debugMode,
+        function(_, _, value)
+            Config.Settings.debugMode = value
+            if Config.Settings.debugMode then
+                print("|cff87CEEB[Thic-Portals]|r Debug mode enabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Debug mode disabled.")
+            end
+        end, "Toggles debug mode for additional console logging.")
 
     -- Create a label for the food and water prices
     scroll:AddChild(checkboxGroup)
@@ -992,18 +1241,20 @@ function UI.createOptionsPanel()
     scroll:AddChild(messageConfigGroup)
 
     -- Invite Message
-    local inviteMessageGroup = addMessageMultiLineEditBox("Invite Message:", Config.Settings.inviteMessage, function(text)
-        Config.Settings.inviteMessage = text
-        print("|cff87CEEB[Thic-Portals]|r Invite message updated.")
-    end)
+    local inviteMessageGroup = addMessageMultiLineEditBox("Invite Message:", Config.Settings.inviteMessage,
+        function(text)
+            Config.Settings.inviteMessage = text
+            print("|cff87CEEB[Thic-Portals]|r Invite message updated.")
+        end)
     messageConfigGroup:AddChild(inviteMessageGroup)
     messageConfigGroup:AddChild(smallVerticalGap)
 
     -- Invite Message Without Destination
-    local inviteMessageWithoutDestinationGroup = addMessageMultiLineEditBox("Invite Message (No Destination):", Config.Settings.inviteMessageWithoutDestination, function(text)
-        Config.Settings.inviteMessageWithoutDestination = text
-        print("|cff87CEEB[Thic-Portals]|r Invite message without destination updated.")
-    end)
+    local inviteMessageWithoutDestinationGroup = addMessageMultiLineEditBox("Invite Message (No Destination):",
+        Config.Settings.inviteMessageWithoutDestination, function(text)
+            Config.Settings.inviteMessageWithoutDestination = text
+            print("|cff87CEEB[Thic-Portals]|r Invite message without destination updated.")
+        end)
     messageConfigGroup:AddChild(inviteMessageWithoutDestinationGroup)
     messageConfigGroup:AddChild(smallVerticalGap)
 
@@ -1024,17 +1275,26 @@ function UI.createOptionsPanel()
     messageConfigGroup:AddChild(largeVerticalGap)
 
     -- Creating Keyword Sections
-    createKeywordSection(scroll, "|cFFFFD700Any Keyword Ban List Management|r", Config.Settings.KeywordBanList, "Keyword", "If the addon matches one of these keywords or phrases in any evaluated message, it will ignore it. This is an exact match by default, to use a partial match where the keyword exists within another word, wrap the keyword in '%' (e.g. %keyword%).")
+    createKeywordSection(scroll, "|cFFFFD700Any Keyword Ban List Management|r", Config.Settings.KeywordBanList,
+        "Keyword",
+        "If the addon matches one of these keywords or phrases in any evaluated message, it will ignore it. This is an exact match by default, to use a partial match where the keyword exists within another word, wrap the keyword in '%' (e.g. %keyword%).")
     scroll:AddChild(largeVerticalGap)
-    createKeywordSection(scroll, "|cFFFFD700Common Phrases Management|r", Config.Settings.commonPhrases, "Common Phrase", "Common Phrases are the first compared list of terms before any other keyword matching occurs. The only way to send an automated invite in this scenario is to match one of the below phrases. This is an exact match by default, but it may be contained in a sentence.")
+    createKeywordSection(scroll, "|cFFFFD700Common Phrases Management|r", Config.Settings.commonPhrases,
+        "Common Phrase",
+        "Common Phrases are the first compared list of terms before any other keyword matching occurs. The only way to send an automated invite in this scenario is to match one of the below phrases. This is an exact match by default, but it may be contained in a sentence.")
     scroll:AddChild(largeVerticalGap)
-    createKeywordSection(scroll, "|cFFFFD700Intent Keywords Management|r", Config.Settings.IntentKeywords, "Intent", "Intent is used to match the player's intent to trade or request a service (e.g. wtb, need). Exact match only.")
+    createKeywordSection(scroll, "|cFFFFD700Intent Keywords Management|r", Config.Settings.IntentKeywords, "Intent",
+        "Intent is used to match the player's intent to trade or request a service (e.g. wtb, need). Exact match only.")
     scroll:AddChild(largeVerticalGap)
-    createKeywordSection(scroll, "|cFFFFD700Destination Keywords Management|r", Config.Settings.DestinationKeywords, "Destination", "Destination is used to match the player's intended destination (e.g. darna, if). Exact match only.")
+    createKeywordSection(scroll, "|cFFFFD700Destination Keywords Management|r", Config.Settings.DestinationKeywords,
+        "Destination",
+        "Destination is used to match the player's intended destination (e.g. darna, if). Exact match only.")
     scroll:AddChild(largeVerticalGap)
-    createKeywordSection(scroll, "|cFFFFD700Service Keywords Management|r", Config.Settings.ServiceKeywords, "Service", "Service is used to match the player's intended service (e.g. portal, tp). Exact match only.")
+    createKeywordSection(scroll, "|cFFFFD700Service Keywords Management|r", Config.Settings.ServiceKeywords, "Service",
+        "Service is used to match the player's intended service (e.g. portal, tp). Exact match only.")
     scroll:AddChild(largeVerticalGap)
-    createKeywordSection(scroll, "|cFFFFD700Player Ban List Management|r", Config.Settings.BanList, "Player", "The addon will scan each message and discard any message from a player in this list. Enter values in the format 'Player-Realm'. Exact match only.")
+    createKeywordSection(scroll, "|cFFFFD700Player Ban List Management|r", Config.Settings.BanList, "Player",
+        "The addon will scan each message and discard any message from a player in this list. Enter values in the format 'Player-Realm'. Exact match only.")
     scroll:AddChild(largeVerticalGap)
 
     -- Save the options panel reference in the config for other modules to use
