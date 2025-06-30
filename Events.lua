@@ -58,6 +58,9 @@ function Events.onEvent(self, event, ...)
         UI.createOptionsPanel()
         UI.hideOptionsPanel()
 
+        -- Create the global interface options panel
+        UI.createInterfaceOptionsPanel()
+
         return
     end
 

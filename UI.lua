@@ -1375,6 +1375,67 @@ function UI.resetToggleButtonPosition()
     toggleButton:SetPoint("CENTER", UIParent, "CENTER", 0, 200)
 end
 
+-- Function to create the global interface options panel
+function UI.createInterfaceOptionsPanel()
+    -- Create the main panel frame
+    local panel = CreateFrame("Frame", "ThicPortalsInterfaceOptions", UIParent)
+    panel.name = "Thic-Portals"
+
+    -- Create title
+    local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+    title:SetPoint("TOPLEFT", 16, -16)
+    title:SetText("Thic-Portals Icon Management")
+
+    -- Create subtitle
+    local subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+    subtitle:SetText("Manage the addon's toggle icon visibility and position")
+
+    -- Show Icon Button
+    local showIconButton = CreateFrame("Button", "ThicPortalsShowIconButton", panel, "UIPanelButtonTemplate")
+    showIconButton:SetSize(150, 25)
+    showIconButton:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -20)
+    showIconButton:SetText("Show Icon Button")
+    showIconButton:SetScript("OnClick", function()
+        UI.showToggleButton()
+        print("|cff87CEEB[Thic-Portals]|r Addon management icon displayed.")
+    end)
+
+    -- Reset Icon Position Button
+    local resetIconButton = CreateFrame("Button", "ThicPortalsResetIconButton", panel, "UIPanelButtonTemplate")
+    resetIconButton:SetSize(150, 25)
+    resetIconButton:SetPoint("LEFT", showIconButton, "RIGHT", 20, 0)
+    resetIconButton:SetText("Reset Icon Position")
+    resetIconButton:SetScript("OnClick", function()
+        UI.resetToggleButtonPosition()
+        print("|cff87CEEB[Thic-Portals]|r Addon management icon position reset.")
+    end)
+
+    -- Add descriptions for the buttons
+    local showIconDesc = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    showIconDesc:SetPoint("TOPLEFT", showIconButton, "BOTTOMLEFT", 0, -8)
+    showIconDesc:SetText("Makes the addon toggle icon visible if it's hidden")
+    showIconDesc:SetWidth(150)
+    showIconDesc:SetJustifyH("LEFT")
+    showIconDesc:SetWordWrap(true)
+
+    local resetIconDesc = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    resetIconDesc:SetPoint("TOPLEFT", resetIconButton, "BOTTOMLEFT", 0, -8)
+    resetIconDesc:SetText("Resets the icon position to the center of the screen")
+    resetIconDesc:SetWidth(150)
+    resetIconDesc:SetJustifyH("LEFT")
+    resetIconDesc:SetWordWrap(true)
+
+    if InterfaceOptions_AddCategory then
+        InterfaceOptions_AddCategory(panel)
+    else
+        local category, layout = _G.Settings.RegisterCanvasLayoutCategory(panel, panel.name)
+        _G.Settings.RegisterAddOnCategory(category)
+    end
+
+    return panel
+end
+
 _G.UI = UI
 
 return UI
