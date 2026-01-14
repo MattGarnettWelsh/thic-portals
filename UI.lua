@@ -822,6 +822,8 @@ function UI.showPaginatedTicketWindow()
 
                 -- Show action button
                 actionButton:Show()
+                -- Show remove button
+                removeButton:Show()
 
                 -- Hide message label
                 if ticketFrame.originalMessageLabel then
