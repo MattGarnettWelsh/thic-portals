@@ -7,7 +7,8 @@
 ## SavedVariables: ThicPortalSettings, ThicPortalsSaved, BanList, IntentKeywords, DestinationKeywords, ServiceKeywords, InviteMessage, InviteMessageWithoutDestination, TipMessage, NoTipMessage, HideIcon, ApproachMode
 
 # Embeds
-# Libs\AceGUI-3.0\AceGUI-3.0.xml (leaving for future reference although unused)
+Libs\LibStub\LibStub.lua
+Libs\AceGUI-3.0\AceGUI-3.0.xml
 
 # Core and Config
 Config.lua
