@@ -4,6 +4,8 @@ local Utils = _G.Utils
 
 local UI = {}
 
+_G.UI = UI
+
 local optionsPanel
 local toggleButton
 local toggleButtonOverlayTexture
@@ -14,7 +16,7 @@ local AceGUI = LibStub("AceGUI-3.0") -- Use LibStub to load AceGUI
 
 if not AceGUI then
     print("Error: AceGUI-3.0 is not loaded properly.")
-    return
+    return UI
 end
 
 -- Initialize saved variables to Config (Version 1.3.0)
@@ -1435,7 +1437,5 @@ function UI.createInterfaceOptionsPanel()
 
     return panel
 end
-
-_G.UI = UI
 
 return UI
