@@ -65,7 +65,12 @@ function InviteTrade.invitePlayer(sender)
         sender = string.match(sender, "([^%-]+)")
     end
 
-    InviteUnit(sender)
+    -- Use the appropriate invite function based on the WoW version
+    if C_PartyInfo and C_PartyInfo.InviteUnit then
+        C_PartyInfo.InviteUnit(sender)
+    else
+        InviteUnit(sender)
+    end
 
     playMatchSound()
 
