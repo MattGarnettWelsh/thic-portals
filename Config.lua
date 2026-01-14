@@ -1,11 +1,14 @@
 -- Config.lua
 local Config = {}
 
+-- Make Config available globally before any early returns
+_G.Config = Config
+
 local AceGUI = LibStub("AceGUI-3.0") -- Use LibStub to load AceGUI
 
 if not AceGUI then
     print("Error: AceGUI-3.0 is not loaded properly.")
-    return
+    return Config
 end
 
 -- An object storing many of the addon's gold and trade settings (Version 1.2.2)
@@ -204,7 +207,5 @@ function Config.initializeSavedVariables()
     hideIcon = nil
     ApproachMode = nil
 end
-
-_G.Config = Config
 
 return Config
