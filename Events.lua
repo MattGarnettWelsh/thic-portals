@@ -5,6 +5,8 @@ local UI = _G.UI
 local Utils = _G.Utils
 local Events = {}
 
+_G.Events = Events
+
 Events.pendingInvites = {} -- Table to store pending invites with all relevant data
 
 -- Example structure:
@@ -319,7 +321,5 @@ function Events.handleTradeComplete()
         print("|cff87CEEB[Thic-Portals]|r No current trader found.")
     end
 end
-
-_G.Events = Events
 
 return Events
