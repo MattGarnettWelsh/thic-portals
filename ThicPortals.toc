@@ -1,9 +1,8 @@
-## Interface: 11506
-## Interface-BCC: 20506
+## Interface: 11506, 11507, 11508, 20505, 20506
 ## Title: Thic-Portals
 ## Notes: Automatically invites players who request a portal and sends them a whisper asking for their desired destination if not specified.
 ## Author: Thic-Ashbringer EU
-## Version: 3.0.3
+## Version: 3.0.4
 ## SavedVariables: ThicPortalSettings, ThicPortalsSaved, BanList, IntentKeywords, DestinationKeywords, ServiceKeywords, InviteMessage, InviteMessageWithoutDestination, TipMessage, NoTipMessage, HideIcon, ApproachMode
 
 # Embeds
