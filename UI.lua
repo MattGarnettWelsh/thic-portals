@@ -694,6 +694,10 @@ function UI.showPaginatedTicketWindow()
         local actionButton = CreateFrame("Button", nil, ticketFrame, "SecureActionButtonTemplate")
         actionButton:SetSize(64, 64)
         actionButton:SetPoint("TOP", labelContainer, "BOTTOM", 0, -20) -- Add more space above portal icon
+        -- TBC fix: SecureActionButtons need to register for clicks + Set further attributes
+        actionButton:RegisterForClicks("AnyUp", "AnyDown")
+        actionButton:SetAttribute("type", "action")
+        actionButton:SetAttribute("action", 1) -- Default to action 1 (usually the first spell)
         ticketFrame.actionButton = actionButton
 
         -- Complete TICK
