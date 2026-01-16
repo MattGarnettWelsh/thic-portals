@@ -35,7 +35,8 @@ Config.currentTraderName = nil
 Config.currentTraderRealm = nil
 Config.currentTraderMoney = nil
 Config.Portals = {"Portal: Darnassus", "Portal: Stormwind", "Portal: Ironforge", "Portal: Orgrimmar",
-                  "Portal: Thunder Bluff", "Portal: Undercity"}
+                  "Portal: Thunder Bluff", "Portal: Undercity", "Portal: Exodar", "Portal: Theramore",
+                  "Portal: Silvermoon", "Portal: Stonard"}
 -- List of currently alive portals
 Config.CurrentAlivePortals = {}
 -- Define default settings - these will be used if the saved variables are not found

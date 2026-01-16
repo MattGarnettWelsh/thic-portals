@@ -6,7 +6,7 @@ local Utils = {}
 
 -- Function to calculate the distance between two points using the Pythagorean theorem
 function Utils.calculateDistance(playerX, playerY, targetX, targetY)
-    return math.sqrt((playerX - targetX)^2 + (playerY - targetY)^2)
+    return math.sqrt((playerX - targetX) ^ 2 + (playerY - targetY) ^ 2)
 end
 
 -- Function to check if a value equals another value in a table
@@ -111,15 +111,11 @@ end
 function Utils.printGoldInformation()
     print(string.format("|cff87CEEB[Thic-Portals]|r Total trades completed: %d", Config.Settings.totalTradesCompleted))
     print(string.format("|cff87CEEB[Thic-Portals]|r Total gold earned: %dg %ds %dc",
-        math.floor(Config.Settings.totalGold / 10000),
-        math.floor((Config.Settings.totalGold % 10000) / 100),
-        Config.Settings.totalGold % 100
-    ))
+        math.floor(Config.Settings.totalGold / 10000), math.floor((Config.Settings.totalGold % 10000) / 100),
+        Config.Settings.totalGold % 100))
     print(string.format("|cff87CEEB[Thic-Portals]|r Gold earned today: %dg %ds %dc",
-        math.floor(Config.Settings.dailyGold / 10000),
-        math.floor((Config.Settings.dailyGold % 10000) / 100),
-        Config.Settings.dailyGold % 100
-    ))
+        math.floor(Config.Settings.dailyGold / 10000), math.floor((Config.Settings.dailyGold % 10000) / 100),
+        Config.Settings.dailyGold % 100))
 end
 
 -- Function to reset daily gold if needed
@@ -165,7 +161,7 @@ function Utils.getMatchingPortal(destination)
         matched = false,
         spellID = 10059,
         spellName = "Portal: Stormwind",
-        locationName = "Stormwind",
+        locationName = "Stormwind"
     }
 
     if not destination then
@@ -231,6 +227,14 @@ function Utils.getMatchingPortal(destination)
             spellID = 11420
         elseif bestMatch == "Portal: Undercity" then
             spellID = 11418
+        elseif bestMatch == "Portal: Exodar" then
+            spellID = 32266
+        elseif bestMatch == "Portal: Theramore" then
+            spellID = 49360
+        elseif bestMatch == "Portal: Silvermoon" then
+            spellID = 32267
+        elseif bestMatch == "Portal: Stonard" then
+            spellID = 49361
         end
 
         portal = {
