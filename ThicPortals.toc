@@ -4,7 +4,6 @@
 ## Author: Thic-Ashbringer EU
 ## Version: 3.1.0
 ## SavedVariables: ThicPortalSettings, ThicPortalsSaved, BanList, IntentKeywords, DestinationKeywords, ServiceKeywords, InviteMessage, InviteMessageWithoutDestination, TipMessage, NoTipMessage, HideIcon, ApproachMode
-
 # Embeds
 Libs\LibStub\LibStub.lua
 Libs\AceGUI-3.0\AceGUI-3.0.xml
