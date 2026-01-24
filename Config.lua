@@ -42,6 +42,7 @@ Config.CurrentAlivePortals = {}
 -- Define default settings - these will be used if the saved variables are not found
 ThicPortalSettings = {
     totalGold = 0,
+    maxGroupMembers = 2,
     dailyGold = 0,
     totalTradesCompleted = 0,
     lastUpdateDate = nil,
@@ -121,6 +122,7 @@ function Config.initializeSavedVariables()
     if Config.Settings.totalGold == 0 then
         Config.Settings.totalGold = ThicPortalsSaved and ThicPortalsSaved.totalGold or 0
     end
+
     if Config.Settings.dailyGold == 0 then
         Config.Settings.dailyGold = ThicPortalsSaved and ThicPortalsSaved.dailyGold or 0
     end
@@ -132,6 +134,9 @@ function Config.initializeSavedVariables()
         Config.Settings.lastUpdateDate = ThicPortalsSaved and ThicPortalsSaved.lastUpdateDate or date("%Y-%m-%d")
     end
     --
+    if Config.Settings.maxGroupMembers == 2 then
+        Config.Settings.maxGroupMembers = ThicPortalsSaved and ThicPortalsSaved.maxGroupMembers or 2
+    end 
     Config.Settings.BanList = BanList or Config.Settings.BanList
     Config.Settings.IntentKeywords = IntentKeywords or Config.Settings.IntentKeywords
     Config.Settings.DestinationKeywords = DestinationKeywords or Config.Settings.DestinationKeywords
