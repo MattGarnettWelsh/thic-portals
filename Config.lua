@@ -71,6 +71,7 @@ ThicPortalSettings = {
     distanceInferringTravelled = 1000,
     consecutiveLeavesWithoutPayment = 0,
     leaveWithoutPaymentThreshold = 2,
+    maxSimultaneousTickets = 15,
 
     addonEnabled = false,
     disableGlobalChannels = false,
@@ -193,6 +194,9 @@ function Config.initializeSavedVariables()
                 ["Conjured Sparkling Water"] = 2500 -- 25 silver
             }
         }
+    end
+    if not Config.Settings.maxSimultaneousTickets then
+        Config.Settings.maxSimultaneousTickets = ThicPortalSettings.maxSimultaneousTickets or 15
     end
 
     -- Remove old global variables if needed (Version 1.2.2)

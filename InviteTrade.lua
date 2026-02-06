@@ -181,6 +181,19 @@ end
 
 -- Main function to handle invites and messages
 function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, message, destinationOnly)
+    -- Check if we've reached the maximum number of simultaneous tickets
+    local currentTicketCount = 0
+    for _ in pairs(Events.pendingInvites) do
+        currentTicketCount = currentTicketCount + 1
+    end
+    
+    if currentTicketCount >= Config.Settings.maxSimultaneousTickets then
+        if Config.Settings.debugMode then
+            print("[Thic-Portals] Maximum simultaneous tickets (" .. Config.Settings.maxSimultaneousTickets .. ") reached. Ignoring invite for: " .. playerName)
+        end
+        return
+    end
+    
     -- Here we deal with the player ban list
     if Utils.isPlayerBanned(sender) then
         if Config.Settings.debugMode then

@@ -11,6 +11,7 @@ local toggleButton
 local toggleButtonOverlayTexture
 
 local fixedLabelWidth = 150 -- Set a fixed width for the labels
+local maxTicketsEditBox = nil
 
 local AceGUI = LibStub("AceGUI-3.0") -- Use LibStub to load AceGUI
 
@@ -1179,6 +1180,35 @@ function UI.createOptionsPanel()
 
     -- Create a label for the food and water prices
     scroll:AddChild(checkboxGroup)
+    scroll:AddChild(largeVerticalGap)
+
+    -- Max Simultaneous Tickets Setting
+    local maxTicketsGroup = AceGUI:Create("SimpleGroup")
+    maxTicketsGroup:SetFullWidth(true)
+    maxTicketsGroup:SetLayout("Flow")
+
+    local spacer = AceGUI:Create("Label")
+    spacer:SetWidth(30)
+    maxTicketsGroup:AddChild(spacer)
+
+    maxTicketsEditBox = AceGUI:Create("EditBox")
+    maxTicketsEditBox:SetLabel("Max Simultaneous Tickets")
+    maxTicketsEditBox:SetText(tostring(Config.Settings.maxSimultaneousTickets))
+    maxTicketsEditBox:SetWidth(200)
+    maxTicketsEditBox:SetCallback("OnEnterPressed", function(widget, event, text)
+        local value = tonumber(text)
+        if value and value >= 1 and value <= 15 then
+            Config.Settings.maxSimultaneousTickets = math.floor(value)
+            print("|cff87CEEB[Thic-Portals]|r Max simultaneous tickets set to: " ..
+                      Config.Settings.maxSimultaneousTickets)
+        else
+            print("|cff87CEEB[Thic-Portals]|r Invalid value. Please enter a number between 1 and 15.")
+            widget:SetText(tostring(Config.Settings.maxSimultaneousTickets))
+        end
+    end)
+    maxTicketsGroup:AddChild(maxTicketsEditBox)
+
+    scroll:AddChild(maxTicketsGroup)
     scroll:AddChild(largeVerticalGap)
 
     -- Create a group for food and water prices
