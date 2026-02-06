@@ -442,6 +442,11 @@ function UI.updateTicketFrame()
         UI.ticketFrame.originalMessageValue:SetText(inviteData.originalMessage or "")
     end
 
+    -- Update sender name in message view
+    if UI.ticketFrame.messageSenderValue and UI.ticketFrame.viewingMessage then
+        UI.ticketFrame.messageSenderValue:SetText(sender)
+    end
+
     -- Enable/disable navigation buttons based on current index
     if UI.ticketFrame.prevButton then
         local prevEnabled = UI.currentTicketIndex > 1
@@ -767,6 +772,8 @@ function UI.showPaginatedTicketWindow()
 
         -- Message view state
         ticketFrame.viewingMessage = false
+        ticketFrame.messageSenderLabel = nil
+        ticketFrame.messageSenderValue = nil
         ticketFrame.originalMessageLabel = nil
         ticketFrame.originalMessageValue = nil
 
@@ -790,9 +797,20 @@ function UI.showPaginatedTicketWindow()
                 -- Hide remove button
                 removeButton:Hide()
 
+                -- Show sender name in message view
+                ticketFrame.messageSenderLabel = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+                ticketFrame.messageSenderLabel:SetPoint("TOPLEFT", ticketFrame, "TOPLEFT", 30, -70)
+                ticketFrame.messageSenderLabel:SetText("From:")
+                ticketFrame.messageSenderValue = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+                ticketFrame.messageSenderValue:SetPoint("TOPLEFT", ticketFrame.messageSenderLabel, "BOTTOMLEFT", 0, -5)
+                local sender = UI.ticketList[UI.currentTicketIndex]
+                local inviteData = Events.pendingInvites[sender]
+                ticketFrame.messageSenderValue:SetText(sender)
+
                 -- Show message label
                 ticketFrame.originalMessageLabel = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-                ticketFrame.originalMessageLabel:SetPoint("TOPLEFT", ticketFrame, "TOPLEFT", 30, -70)
+                ticketFrame.originalMessageLabel:SetPoint("TOPLEFT", ticketFrame.messageSenderValue, "BOTTOMLEFT", 0,
+                    -15)
                 ticketFrame.originalMessageLabel:SetText("Original Message:")
                 ticketFrame.originalMessageValue = ticketFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
                 ticketFrame.originalMessageValue:SetPoint("TOPLEFT", ticketFrame.originalMessageLabel, "BOTTOMLEFT", 0,
@@ -800,8 +818,6 @@ function UI.showPaginatedTicketWindow()
                 ticketFrame.originalMessageValue:SetWidth(180)
                 ticketFrame.originalMessageValue:SetJustifyH("LEFT")
                 ticketFrame.originalMessageValue:SetWordWrap(true)
-                local sender = UI.ticketList[UI.currentTicketIndex]
-                local inviteData = Events.pendingInvites[sender]
                 ticketFrame.originalMessageValue:SetText(inviteData and inviteData.originalMessage or "")
 
                 -- Show Complete TICK
@@ -831,6 +847,12 @@ function UI.showPaginatedTicketWindow()
                 removeButton:Show()
 
                 -- Hide message label
+                if ticketFrame.messageSenderLabel then
+                    ticketFrame.messageSenderLabel:Hide()
+                end
+                if ticketFrame.messageSenderValue then
+                    ticketFrame.messageSenderValue:Hide()
+                end
                 if ticketFrame.originalMessageLabel then
                     ticketFrame.originalMessageLabel:Hide()
                 end
