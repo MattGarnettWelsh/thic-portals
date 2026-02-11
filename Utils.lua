@@ -62,6 +62,20 @@ function Utils.findKeywordPosition(message, keywordList)
     return nil, nil
 end
 
+-- Function to replace placeholders in messages with actual values
+function Utils.replacePlaceholders(message, destination)
+    if not message then
+        return message
+    end
+    
+    -- Replace %destination% with the actual destination
+    if destination then
+        message = string.gsub(message, "%%destination%%", destination)
+    end
+    
+    return message
+end
+
 -- Function to update the distance label in the UI based on the distance between two players
 function Utils.updateDistanceLabel(sender, distanceLabel)
     local ticker

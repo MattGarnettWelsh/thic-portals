@@ -1292,6 +1292,12 @@ function UI.createOptionsPanel()
     messageConfigTitle:SetFontObject(GameFontNormalLarge)
     messageConfigTitle:SetFullWidth(true)
     scroll:AddChild(messageConfigTitle)
+
+    -- Add helper text about placeholders
+    local placeholderHelp = AceGUI:Create("Label")
+    placeholderHelp:SetText("|cFFADD8E6Tip: Use %destination% in your messages to insert the destination name|r")
+    placeholderHelp:SetFullWidth(true)
+    scroll:AddChild(placeholderHelp)
     scroll:AddChild(largeVerticalGap)
 
     -- Create a parent group for the message configuration

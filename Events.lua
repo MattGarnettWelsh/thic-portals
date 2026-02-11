@@ -130,7 +130,8 @@ function Events.onEvent(self, event, ...)
                 UI.showPaginatedTicketWindow(sender, inviteData.destination)
 
                 if inviteData.destination then
-                    SendChatMessage(Config.Settings.inviteMessage, "WHISPER", nil, inviteData.fullName)
+                    local message = Utils.replacePlaceholders(Config.Settings.inviteMessage, inviteData.destination)
+                    SendChatMessage(message, "WHISPER", nil, inviteData.fullName)
                 else
                     SendChatMessage(Config.Settings.inviteMessageWithoutDestination, "WHISPER", nil, inviteData.fullName)
                 end
@@ -301,11 +302,13 @@ function Events.handleTradeComplete()
         if Events.pendingInvites[Config.currentTraderName] then
             if InviteTrade.checkTradeTip() then
                 -- Send them a thank you!
-                SendChatMessage(Config.Settings.tipMessage, "WHISPER", nil,
-                    Events.pendingInvites[Config.currentTraderName].fullName)
+                local message = Utils.replacePlaceholders(Config.Settings.tipMessage,
+                    Events.pendingInvites[Config.currentTraderName].destination)
+                SendChatMessage(message, "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
             else
-                SendChatMessage(Config.Settings.noTipMessage, "WHISPER", nil,
-                    Events.pendingInvites[Config.currentTraderName].fullName)
+                local message = Utils.replacePlaceholders(Config.Settings.noTipMessage,
+                    Events.pendingInvites[Config.currentTraderName].destination)
+                SendChatMessage(message, "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
             end
 
             Events.pendingInvites[Config.currentTraderName].hasPaid = true
