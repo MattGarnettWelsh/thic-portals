@@ -4,42 +4,8 @@ local Config = {}
 -- Make Config available globally before any early returns
 _G.Config = Config
 
-local AceGUI = LibStub("AceGUI-3.0") -- Use LibStub to load AceGUI
-
-if not AceGUI then
-    print("Error: AceGUI-3.0 is not loaded properly.")
-    return Config
-end
-
--- An object storing many of the addon's gold and trade settings (Version 1.2.2)
-ThicPortalsSaved = false
--- Initialize saved variables (Version 1.2.2)
-InviteMessage = false
-InviteMessageWithoutDestination = false
-TipMessage = false
-NoTipMessage = false
--- List variables (Version 1.2.2)
-BanList = false
-ApproachMode = false
-HideIcon = false
-IntentKeywords = false
-DestinationKeywords = false
-ServiceKeywords = false
--- Temporary settings, not persisted via variables (Version 1.2.2)
-addonEnabled = false
-soundEnabled = true
-debugMode = false
-
--- New Variables >1.2.2
-Config.currentTraderName = nil
-Config.currentTraderRealm = nil
-Config.currentTraderMoney = nil
-Config.Portals = {"Portal: Darnassus", "Portal: Stormwind", "Portal: Ironforge", "Portal: Orgrimmar",
-                  "Portal: Thunder Bluff", "Portal: Undercity", "Portal: Exodar", "Portal: Theramore",
-                  "Portal: Silvermoon", "Portal: Stonard"}
--- List of currently alive portals
-Config.CurrentAlivePortals = {}
 -- Define default settings - these will be used if the saved variables are not found
+-- This MUST be defined before any early returns to ensure Config.Settings is always available
 ThicPortalSettings = {
     totalGold = 0,
     dailyGold = 0,
@@ -102,6 +68,46 @@ ThicPortalSettings = {
         y = 200
     }
 }
+
+-- Initialize Config.Settings immediately to ensure it's always available
+Config.Settings = ThicPortalSettings
+
+-- An object storing many of the addon's gold and trade settings (Version 1.2.2)
+ThicPortalsSaved = false
+-- Initialize saved variables (Version 1.2.2)
+InviteMessage = false
+InviteMessageWithoutDestination = false
+TipMessage = false
+NoTipMessage = false
+-- List variables (Version 1.2.2)
+BanList = false
+ApproachMode = false
+HideIcon = false
+IntentKeywords = false
+DestinationKeywords = false
+ServiceKeywords = false
+-- Temporary settings, not persisted via variables (Version 1.2.2)
+addonEnabled = false
+soundEnabled = true
+debugMode = false
+
+-- New Variables >1.2.2
+Config.currentTraderName = nil
+Config.currentTraderRealm = nil
+Config.currentTraderMoney = nil
+Config.Portals = {"Portal: Darnassus", "Portal: Stormwind", "Portal: Ironforge", "Portal: Orgrimmar",
+                  "Portal: Thunder Bluff", "Portal: Undercity", "Portal: Exodar", "Portal: Theramore",
+                  "Portal: Silvermoon", "Portal: Stonard"}
+-- List of currently alive portals
+Config.CurrentAlivePortals = {}
+
+-- Check if AceGUI is available
+local AceGUI = LibStub("AceGUI-3.0")
+
+if not AceGUI then
+    print("Error: AceGUI-3.0 is not loaded properly.")
+    return Config
+end
 
 -- Initialize saved variables
 function Config.initializeSavedVariables()
