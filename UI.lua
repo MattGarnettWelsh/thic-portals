@@ -135,7 +135,6 @@ local function addNumberEditBox(labelText, numberVar, callback)
 
     return group
 end
-
 -- Helper function to add price edit boxes for a category (food or water)
 local function addPriceEditBoxes(group, category, prices)
     for itemName, price in pairs(prices) do
@@ -145,6 +144,51 @@ local function addPriceEditBoxes(group, category, prices)
         end)
         group:AddChild(priceEditBox)
     end
+end
+-- Helper function to create a label and a small edit
+local function addGeneralNumberEditBox(numberVar, callback)
+    local group = AceGUI:Create("SimpleGroup")
+    group:SetFullWidth(true)
+    group:SetLayout("Flow")
+    
+    -- Add spacer between checkboxes
+    local spacer = AceGUI:Create("Label")
+    spacer:SetWidth(30)
+    group:AddChild(spacer)
+
+    -- Create an edit box for the number
+    local editBox = AceGUI:Create("EditBox")
+    editBox:SetText(numberVar)
+    editBox:SetWidth(150)
+    editBox:SetLabel("Party Size: ")
+    editBox:SetCallback("OnEnterPressed", function(_, _, text)
+        local value = tonumber(text)
+        callback(value)
+     
+    end)
+    group:AddChild(editBox)
+
+    -- Add spacer between checkboxes
+    local spacer = AceGUI:Create("Label")
+    spacer:SetWidth(10)
+    group:AddChild(spacer)
+
+    -- Finally add the value label
+
+    return group
+end
+
+local function addMaxSizeEditBoxes(group)
+    local maxSizeEditBox = addGeneralNumberEditBox(Config.Settings.maxGroupMembers, function(value)
+        -- Update runtime settings
+        Config.Settings.maxGroupMembers = value
+        -- Update saved variables so it persists
+        ThicPortalsSaved.maxGroupMembers = value
+
+        print("|cff87CEEB[Thic-Portals]|r Max group size updated to " .. value .. ".")
+    end)
+
+    group:AddChild(maxSizeEditBox)
 end
 
 -- Helper function to create a label and editbox pair
@@ -1245,6 +1289,7 @@ function UI.createOptionsPanel()
     foodWaterPricesTitle:SetFullWidth(true)
     scroll:AddChild(foodWaterPricesTitle)
     scroll:AddChild(smallVerticalGap)
+    
 
     -- Create a description for the food and water prices
     local foodWaterPricesDescription = AceGUI:Create("Label")
@@ -1263,6 +1308,24 @@ function UI.createOptionsPanel()
 
     scroll:AddChild(smallVerticalGap)
     scroll:AddChild(largeVerticalGap)
+
+    local maxGroupSizeGroup = AceGUI:Create("SimpleGroup")
+    foodWaterPricesGroup:SetFullWidth(true)
+    foodWaterPricesGroup:SetLayout("Flow")
+    -- Create a title for Max Amount of Party Members
+    local maxGroupTitle = AceGUI:Create("Label")
+    maxGroupTitle:SetText("Max Amount of Party Members")
+    maxGroupTitle:SetFontObject(GameFontNormalLarge)
+    maxGroupTitle:SetFullWidth(true)
+    scroll:AddChild(maxGroupTitle)
+    scroll:AddChild(smallVerticalGap)
+    -- Add edit box for size
+    addMaxSizeEditBoxes(maxGroupSizeGroup, Config.Settings.maxGroupMembers)
+
+  
+    scroll:AddChild(maxGroupSizeGroup)
+    scroll:AddChild(largeVerticalGap)
+
 
     -- Gold Stats Section
     local goldStatsTitle = AceGUI:Create("Label")

@@ -60,23 +60,27 @@ end
 
 -- Function to handle sending an invite to a player
 function InviteTrade.invitePlayer(sender)
-    if Config.Settings.removeRealmFromInviteCommand then
-        -- sender = Thicfury-Ashbringer for example, we want to remove the realm part
-        sender = string.match(sender, "([^%-]+)")
+    print(Config.Settings.dailyGold)
+    print(Config.Settings.maxGroupMembers)
+    print(GetNumGroupMembers())
+    if GetNumGroupMembers()<=Config.Settings.maxGroupMembers then 
+        if Config.Settings.removeRealmFromInviteCommand then
+            -- sender = Thicfury-Ashbringer for example, we want to remove the realm part
+            sender = string.match(sender, "([^%-]+)")
+        end
+
+        -- Use the appropriate invite function based on the WoW version
+        if C_PartyInfo and C_PartyInfo.InviteUnit then
+            C_PartyInfo.InviteUnit(sender)
+        else
+            InviteUnit(sender)
+        end
+
+        playMatchSound()
+
+        print("|cff87CEEB[Thic-Portals]|r Invited " .. sender .. " to the group.")
     end
-
-    -- Use the appropriate invite function based on the WoW version
-    if C_PartyInfo and C_PartyInfo.InviteUnit then
-        C_PartyInfo.InviteUnit(sender)
-    else
-        InviteUnit(sender)
-    end
-
-    playMatchSound()
-
-    print("|cff87CEEB[Thic-Portals]|r Invited " .. sender .. " to the group.")
 end
-
 -- Function to create a pending invite entry
 function InviteTrade.createPendingInvite(playerName, playerClass, sender, message, destinationKeyword)
     Events.pendingInvites[playerName] = {
