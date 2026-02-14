@@ -2,7 +2,7 @@
 ## Title: Thic-Portals
 ## Notes: Automatically invites players who request a portal and sends them a whisper asking for their desired destination if not specified.
 ## Author: Thic-Ashbringer EU
-## Version: 3.2.0
+## Version: 3.3.0
 ## SavedVariables: ThicPortalSettings, ThicPortalsSaved, BanList, IntentKeywords, DestinationKeywords, ServiceKeywords, InviteMessage, InviteMessageWithoutDestination, TipMessage, NoTipMessage, HideIcon, ApproachMode
 
 # Embeds
