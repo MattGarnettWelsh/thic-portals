@@ -97,7 +97,7 @@ Config.currentTraderRealm = nil
 Config.currentTraderMoney = nil
 Config.Portals = {"Portal: Darnassus", "Portal: Stormwind", "Portal: Ironforge", "Portal: Orgrimmar",
                   "Portal: Thunder Bluff", "Portal: Undercity", "Portal: Exodar", "Portal: Theramore",
-                  "Portal: Silvermoon", "Portal: Stonard"}
+                  "Portal: Silvermoon", "Portal: Stonard", "Portal: Shattrath"}
 -- List of currently alive portals
 Config.CurrentAlivePortals = {}
 

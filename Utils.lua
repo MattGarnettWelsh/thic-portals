@@ -249,6 +249,14 @@ function Utils.getMatchingPortal(destination)
             spellID = 32267
         elseif bestMatch == "Portal: Stonard" then
             spellID = 49361
+        elseif bestMatch == "Portal: Shattrath" then
+            -- Both Alliance and Horde can portal to Shattrath, but they have different spell IDs, so we need to check the player's faction first
+            local englishFaction, _ = UnitFactionGroup("player")
+            if englishFaction == "Alliance" then
+                spellID = 33691
+            elseif englishFaction == "Horde" then
+                spellID = 35717
+            end
         end
 
         portal = {
