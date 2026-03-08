@@ -25,7 +25,7 @@ UI.hideIconCheckbox = AceGUI:Create("CheckBox")
 UI.approachModeCheckbox = AceGUI:Create("CheckBox");
 UI.enableFoodWaterSupportCheckbox = AceGUI:Create("CheckBox");
 UI.disableSmartMatchingCheckbox = AceGUI:Create("CheckBox");
-UI.requireDestinationBeforeInvitingCheckbox = AceGUI:Create("CheckBox");
+UI.requireDestinationCheckbox = AceGUI:Create("CheckBox");
 UI.removeRealmFromInviteCommandCheckbox = AceGUI:Create("CheckBox");
 UI.addonEnabledCheckbox = AceGUI:Create("CheckBox");
 UI.disableGlobalChannelsCheckbox = AceGUI:Create("CheckBox");
@@ -1144,7 +1144,7 @@ function UI.createOptionsPanel()
         "Disables advanced smart matching algorithms and only uses the predefined common phrases to match requests (configurable below).")
 
     -- Require destination before inviting
-    addCheckbox(checkboxGroup, "Require Destination", UI.requireDestinationBeforeInvitingCheckbox,
+    addCheckbox(checkboxGroup, "Require Destination", UI.requireDestinationCheckbox,
         Config.Settings.requireDestination, function(_, _, value)
             Config.Settings.requireDestination = value
             if Config.Settings.requireDestination then
