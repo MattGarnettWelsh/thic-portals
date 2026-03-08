@@ -25,6 +25,7 @@ UI.hideIconCheckbox = AceGUI:Create("CheckBox")
 UI.approachModeCheckbox = AceGUI:Create("CheckBox");
 UI.enableFoodWaterSupportCheckbox = AceGUI:Create("CheckBox");
 UI.disableSmartMatchingCheckbox = AceGUI:Create("CheckBox");
+UI.requireDestinationBeforeInvitingCheckbox = AceGUI:Create("CheckBox");
 UI.removeRealmFromInviteCommandCheckbox = AceGUI:Create("CheckBox");
 UI.addonEnabledCheckbox = AceGUI:Create("CheckBox");
 UI.disableGlobalChannelsCheckbox = AceGUI:Create("CheckBox");
@@ -1141,6 +1142,18 @@ function UI.createOptionsPanel()
             end
         end,
         "Disables advanced smart matching algorithms and only uses the predefined common phrases to match requests (configurable below).")
+
+    -- Require destination before inviting
+    addCheckbox(checkboxGroup, "Require Destination", UI.requireDestinationBeforeInvitingCheckbox,
+        Config.Settings.requireDestination, function(_, _, value)
+            Config.Settings.requireDestination = value
+            if Config.Settings.requireDestination then
+                print("|cff87CEEB[Thic-Portals]|r Require destination enabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Require destination disabled.")
+            end
+        end,
+        "When enabled, the addon will require a valid destination (one listed in Destination Keywords) in the message before sending out the invite.")
 
     -- Don't use realm when inviting
     addCheckbox(checkboxGroup, "Remove Realm Affix From Invite Command", UI.removeRealmFromInviteCommandCheckbox,

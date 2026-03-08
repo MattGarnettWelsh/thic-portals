@@ -229,6 +229,12 @@ function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, mes
     end
 
     if matched then
+        if Config.Settings.requireDestination and not destinationKeyword then
+            if Config.Settings.debugMode then
+                print("|cff87CEEB[Thic-Portals]|r Invite match found from " .. playerName .. ", but no (valid) destination keyword detected and Require Destination is enabled. Not sending invite.")
+            end
+            return
+        end
         InviteTrade.invitePlayer(sender)
         InviteTrade.createPendingInvite(playerName, playerClass, sender, message, destinationKeyword)
     end
