@@ -17,8 +17,13 @@ ThicPortalSettings = {
 
     IntentKeywords = {"wtb", "wtf", "want to buy", "looking for", "need", "seeking", "buying", "purchasing", "lf",
                       "can anyone make", "can you make", "can anyone do", "can you do"},
-    DestinationKeywords = {"darn", "darnassuss", "darnas", "darrna", "darnaas", "darnassus", "darnasuss", "dalaran",
-                           "darna", "darnasus", "sw", "stormwind", "if", "ironforge"},
+    DestinationKeywords = { -- Alliance Cities
+    "darn", "darnassuss", "darnas", "darrna", "darnaas", "darnassus", "darnasuss", "darna", "darnasus", "sw",
+    "stormwind", "storm wind", "if", "ironforge", "iron forge", "exodar", "exo", "theramore", "thera", "tmore",
+    -- Horde Cities
+    "org", "orgrimmar", "orgri", "orgim", "tb", "thunder bluff", "thunderbluff", "thunder", "uc", "undercity",
+    "under city", "silvermoon", "silver moon", "sm", "silv", "stonard", "ston", -- Neutral TBC
+    "shattrath", "shatt", "shat", "shath"},
     ServiceKeywords = {"portal", "port", "prt", "portla", "pportal", "protal", "pport", "teleport", "tp", "tele"},
     FoodKeywords = {"food"},
     WaterKeywords = {"water"},
@@ -28,9 +33,17 @@ ThicPortalSettings = {
     tipMessage = "[Thic-Portals] Thank you for your tip, enjoy your journey - safe travels!",
     noTipMessage = "[Thic-Portals] Enjoy your journey and thanks for choosing Thic-Portals. Safe travels!",
 
-    commonPhrases = {"wtb mage port", "wtb mage portal", "wtb portal darnassus", "wtb portal darnasus",
-                     "wtb portal darna", "wtb portal darn", "wtb darnassus port", "wtb darnasus port", "wtb darn port",
-                     "wtb darna port", "wtb portal", "wtb port"},
+    commonPhrases = {"wtb mage port", "wtb mage portal", "wtb portal", "wtb port", -- Alliance destinations
+    "wtb portal darnassus", "wtb portal darnasus", "wtb portal darna", "wtb portal darn", "wtb darnassus port",
+                     "wtb darnasus port", "wtb darn port", "wtb darna port", "wtb portal stormwind", "wtb portal sw",
+                     "wtb sw port", "wtb stormwind port", "wtb portal ironforge", "wtb portal if", "wtb if port",
+                     "wtb ironforge port", "wtb portal exodar", "wtb exodar port", "wtb portal exo",
+                     "wtb portal theramore", "wtb theramore port", -- Horde destinations
+    "wtb portal orgrimmar", "wtb portal org", "wtb org port", "wtb orgrimmar port", "wtb portal thunder bluff",
+                     "wtb portal tb", "wtb tb port", "wtb thunder bluff port", "wtb portal undercity", "wtb portal uc",
+                     "wtb uc port", "wtb undercity port", "wtb portal silvermoon", "wtb portal sm",
+                     "wtb silvermoon port", "wtb sm port", "wtb portal stonard", "wtb stonard port", -- TBC neutral
+    "wtb portal shattrath", "wtb portal shatt", "wtb shattrath port", "wtb shatt port"},
 
     inviteCooldown = 300,
     distanceInferringClose = 50,
@@ -53,26 +66,26 @@ ThicPortalSettings = {
 
     prices = {
         food = {
-            ["Conjured Muffin"] = 500,              -- Level 1
-            ["Conjured Bread"] = 750,               -- Level 5
-            ["Conjured Rye"] = 1000,                -- Level 15
-            ["Conjured Pumpernickel"] = 1500,       -- Level 25
-            ["Conjured Sourdough"] = 2000,          -- Level 35
-            ["Conjured Sweet Roll"] = 2500,         -- Level 45
-            ["Conjured Cinnamon Roll"] = 2500,      -- Level 55
-            ["Conjured Croissant"] = 3000,          -- Level 65 (TBC)
-            ["Conjured Mana Strudel"] = 3500        -- Level 70 (TBC)
+            ["Conjured Muffin"] = 500, -- Level 1
+            ["Conjured Bread"] = 750, -- Level 5
+            ["Conjured Rye"] = 1000, -- Level 15
+            ["Conjured Pumpernickel"] = 1500, -- Level 25
+            ["Conjured Sourdough"] = 2000, -- Level 35
+            ["Conjured Sweet Roll"] = 2500, -- Level 45
+            ["Conjured Cinnamon Roll"] = 2500, -- Level 55
+            ["Conjured Croissant"] = 3000, -- Level 65 (TBC)
+            ["Conjured Mana Strudel"] = 3500 -- Level 70 (TBC)
         },
         water = {
-            ["Conjured Water"] = 500,               -- Level 1
-            ["Conjured Fresh Water"] = 750,         -- Level 5
-            ["Conjured Purified Water"] = 1000,     -- Level 15
-            ["Conjured Spring Water"] = 1500,       -- Level 25
-            ["Conjured Mineral Water"] = 2000,      -- Level 35
-            ["Conjured Sparkling Water"] = 2500,    -- Level 45
-            ["Conjured Crystal Water"] = 2500,      -- Level 55
-            ["Conjured Mountain Spring Water"] = 3000,  -- Level 65 (TBC)
-            ["Conjured Glacier Water"] = 3500       -- Level 70 (TBC)
+            ["Conjured Water"] = 500, -- Level 1
+            ["Conjured Fresh Water"] = 750, -- Level 5
+            ["Conjured Purified Water"] = 1000, -- Level 15
+            ["Conjured Spring Water"] = 1500, -- Level 25
+            ["Conjured Mineral Water"] = 2000, -- Level 35
+            ["Conjured Sparkling Water"] = 2500, -- Level 45
+            ["Conjured Crystal Water"] = 2500, -- Level 55
+            ["Conjured Mountain Spring Water"] = 3000, -- Level 65 (TBC)
+            ["Conjured Glacier Water"] = 3500 -- Level 70 (TBC)
         }
     },
 
@@ -109,9 +122,13 @@ debugMode = false
 Config.currentTraderName = nil
 Config.currentTraderRealm = nil
 Config.currentTraderMoney = nil
-Config.Portals = {"Portal: Darnassus", "Portal: Stormwind", "Portal: Ironforge", "Portal: Orgrimmar",
-                  "Portal: Thunder Bluff", "Portal: Undercity", "Portal: Exodar", "Portal: Theramore",
-                  "Portal: Silvermoon", "Portal: Stonard"}
+Config.Portals = { -- Alliance Portals
+"Portal: Darnassus", "Portal: Stormwind", "Portal: Ironforge", "Portal: Exodar", -- TBC
+"Portal: Theramore", -- Horde Portals
+"Portal: Orgrimmar", "Portal: Thunder Bluff", "Portal: Undercity", "Portal: Silvermoon", -- TBC
+"Portal: Stonard", -- Neutral TBC Portal
+"Portal: Shattrath" -- TBC
+}
 -- List of currently alive portals
 Config.CurrentAlivePortals = {}
 
