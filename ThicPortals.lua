@@ -1,5 +1,4 @@
 -- ThicPortals.lua
-
 local ThicPortals = {}
 
 Config = _G.Config
@@ -97,6 +96,57 @@ function handleCommand(msg)
         else
             print("|cff87CEEB[Thic-Portals]|r Usage: /Tp cooldown [seconds] - Set the invite cooldown period")
         end
+    elseif command == "checkspells" then
+        print("|cff87CEEB[Thic-Portals]|r Scanning spellbook for Conjure spells...")
+        local i = 1
+        local foundFood = false
+        local foundWater = false
+        while i <= 1024 do
+            local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL)
+            if not spellName then
+                break
+            end
+            if spellName == "Conjure Food" or spellName == "Conjure Water" then
+                print("|cff87CEEB[Thic-Portals]|r Found: " .. spellName .. " (" .. (spellRank or "no rank") .. ")")
+                if spellName == "Conjure Food" then
+                    foundFood = true
+                end
+                if spellName == "Conjure Water" then
+                    foundWater = true
+                end
+            end
+            i = i + 1
+        end
+        if not foundFood and not foundWater then
+            print("|cff87CEEB[Thic-Portals]|r No Conjure spells found in spellbook!")
+        end
+
+        -- Debug: Check config structure
+        if not Config.Settings.foodItems then
+            print("|cff87CEEB[Thic-Portals]|r ERROR: Config.Settings.foodItems is nil!")
+        else
+            print("|cff87CEEB[Thic-Portals]|r Config has " .. #Config.Settings.foodItems .. " food items defined.")
+            if #Config.Settings.foodItems > 0 then
+                local item = Config.Settings.foodItems[1]
+                print("|cff87CEEB[Thic-Portals]|r Sample food item: name=" .. (item.name or "nil") .. ", spellName=" ..
+                          (item.spellName or "nil") .. ", rank=" .. (item.rank or "nil"))
+            end
+        end
+
+        if not Config.Settings.waterItems then
+            print("|cff87CEEB[Thic-Portals]|r ERROR: Config.Settings.waterItems is nil!")
+        else
+            print("|cff87CEEB[Thic-Portals]|r Config has " .. #Config.Settings.waterItems .. " water items defined.")
+        end
+
+        local availableFood = Utils.getAvailableFoodItems()
+        local availableWater = Utils.getAvailableWaterItems()
+        print("|cff87CEEB[Thic-Portals]|r Detected " .. #availableFood .. " food items and " .. #availableWater ..
+                  " water items you can conjure.")
+
+        -- Test the detection function directly
+        local testResult = Utils.isSpellRankKnown("Conjure Food", 7)
+        print("|cff87CEEB[Thic-Portals]|r Direct test - isSpellRankKnown('Conjure Food', 7) = " .. tostring(testResult))
     elseif command == "help" then
         print("|cff87CEEB[Thic-Portals]|r Usage:")
         print("/Tp show - Show the addon button")
@@ -104,6 +154,7 @@ function handleCommand(msg)
         print("/Tp off - Disable the addon")
         print("/Tp msg [message] - Set the invite message")
         print("/Tp debug on/off - Enable or disable debug mode")
+        print("/Tp checkspells - Check what conjure spells are detected")
         print("/Tp author - The creator")
         print("/Tp help - Show this help message")
         print("/Tp keywords add/remove intent/destination/service [keyword] - Add or remove a keyword")

@@ -67,12 +67,12 @@ function Utils.replacePlaceholders(message, destination)
     if not message then
         return message
     end
-    
+
     -- Replace %destination% with the actual destination
     if destination then
         message = string.gsub(message, "%%destination%%", destination)
     end
-    
+
     return message
 end
 
@@ -289,6 +289,94 @@ function Utils.formatCopperValue(totalCost)
     end
 
     return formattedString
+end
+
+-- Function to check if a spell rank is known by the player
+function Utils.isSpellRankKnown(spellBaseName, rank)
+    if not spellBaseName or not rank then
+        return false
+    end
+
+    -- In Classic, we need to iterate through all spell slots
+    local i = 1
+    local maxSpells = 1024 -- Safe upper limit
+
+    while i <= maxSpells do
+        local spellName, spellSubName = GetSpellBookItemName(i, BOOKTYPE_SPELL)
+
+        if not spellName then
+            break
+        end
+
+        -- Check if the spell name matches what we're looking for
+        if spellName == spellBaseName then
+            -- spellSubName contains rank info like "Rank 7"
+            if spellSubName then
+                local rankNum = tonumber(spellSubName:match("(%d+)"))
+                if rankNum and rankNum >= rank then
+                    -- If the player knows this rank or higher, they can conjure this item
+                    return true
+                end
+            elseif not spellSubName and rank == 1 then
+                -- Some spells don't have ranks, treat as rank 1
+                return true
+            end
+        end
+
+        i = i + 1
+    end
+
+    return false
+end
+
+-- Function to get available food items (that the mage can conjure)
+function Utils.getAvailableFoodItems()
+    local availableItems = {}
+    for _, item in ipairs(Config.Settings.foodItems or {}) do
+        if Utils.isSpellRankKnown(item.spellName, item.rank) then
+            table.insert(availableItems, item)
+        end
+    end
+    return availableItems
+end
+
+-- Function to get available water items (that the mage can conjure)
+function Utils.getAvailableWaterItems()
+    local availableItems = {}
+    for _, item in ipairs(Config.Settings.waterItems or {}) do
+        if Utils.isSpellRankKnown(item.spellName, item.rank) then
+            table.insert(availableItems, item)
+        end
+    end
+    return availableItems
+end
+
+-- Function to get the highest tier food item the player has in inventory
+function Utils.getHighestTierFoodInInventory()
+    local availableFood = Utils.getAvailableFoodItems()
+    -- Iterate in reverse order (highest tier first)
+    for i = #availableFood, 1, -1 do
+        local item = availableFood[i]
+        local count = GetItemCount(item.itemId, false)
+        if count > 0 then
+            return item, count
+        end
+    end
+    return nil, 0
+end
+
+-- Function to get the highest tier water item the player has in inventory
+function Utils.getHighestTierWaterInInventory()
+    local availableWater = Utils.getAvailableWaterItems()
+    -- Iterate in reverse order (highest tier first)
+    for i = #availableWater, 1, -1 do
+        local item = availableWater[i]
+        local count = GetItemCount(item.itemId, false)
+        if count > 0 then
+            return item, count
+        end
+    end
+    return nil, 0
 end
 
 _G.Utils = Utils
