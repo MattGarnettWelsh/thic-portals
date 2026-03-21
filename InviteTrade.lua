@@ -186,14 +186,15 @@ function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, mes
     for _ in pairs(Events.pendingInvites) do
         currentTicketCount = currentTicketCount + 1
     end
-    
+
     if currentTicketCount >= Config.Settings.maxSimultaneousTickets then
         if Config.Settings.debugMode then
-            print("[Thic-Portals] Maximum simultaneous tickets (" .. Config.Settings.maxSimultaneousTickets .. ") reached. Ignoring invite for: " .. playerName)
+            print("[Thic-Portals] Maximum simultaneous tickets (" .. Config.Settings.maxSimultaneousTickets ..
+                      ") reached. Ignoring invite for: " .. playerName)
         end
         return
     end
-    
+
     -- Here we deal with the player ban list
     if Utils.isPlayerBanned(sender) then
         if Config.Settings.debugMode then
@@ -345,14 +346,14 @@ function InviteTrade.sendFoodAndWaterStockMessage(playerName, playerClass)
 
     -- Build food stock message if food is available
     if foodItem and foodCount > 0 then
-        foodStock = foodCount .. " x " .. foodItem.name .. " (20x: " ..
-                    Utils.formatCopperValue(foodItem.price * 20) .. ")"
+        foodStock = foodCount .. " x " .. foodItem.name .. " (20x: " .. Utils.formatCopperValue(foodItem.price * 20) ..
+                        ")"
     end
 
     -- Build water stock message if water is available
     if waterItem and waterCount > 0 then
-        waterStock = waterCount .. " x " .. waterItem.name .. " (20x: " ..
-                     Utils.formatCopperValue(waterItem.price * 20) .. ")"
+        waterStock =
+            waterCount .. " x " .. waterItem.name .. " (20x: " .. Utils.formatCopperValue(waterItem.price * 20) .. ")"
     end
 
     -- If the player has no food or water in their inventory, we will not advertise it

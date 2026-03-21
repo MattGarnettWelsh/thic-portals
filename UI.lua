@@ -140,14 +140,14 @@ end
 -- Now smart: only shows items the player can actually conjure
 local function addPriceEditBoxes(group, category, prices)
     local items = {}
-    
+
     -- Get the list of items based on category
     if category == "Food" then
         items = Utils.getAvailableFoodItems()
     elseif category == "Water" then
         items = Utils.getAvailableWaterItems()
     end
-    
+
     -- If no items are available, show a message
     if #items == 0 then
         local noItemsLabel = AceGUI:Create("Label")
@@ -156,7 +156,7 @@ local function addPriceEditBoxes(group, category, prices)
         group:AddChild(noItemsLabel)
         return
     end
-    
+
     -- Create edit boxes for each available item
     for _, item in ipairs(items) do
         local priceEditBox = addNumberEditBox(item.name .. ":", item.price, function(value)

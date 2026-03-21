@@ -4,9 +4,9 @@ local Config = {}
 -- Make Config available globally before any early returns
 _G.Config = Config
 
--- Define default settings - these will be used if the saved variables are not found
--- This MUST be defined before any early returns to ensure Config.Settings is always available
-ThicPortalSettings = {
+-- Define DEFAULT settings that will never be overwritten by saved variables
+-- This table is used to initialize any missing fields in saved settings
+local DEFAULT_SETTINGS = {
     totalGold = 0,
     dailyGold = 0,
     totalTradesCompleted = 0,
@@ -64,48 +64,66 @@ ThicPortalSettings = {
     hideIcon = false,
     disableAFKProtection = false,
 
-    foodItems = {
-        {name = "Conjured Muffin", itemId = 5349, spellId = 587, price = 500},
-        {name = "Conjured Bread", itemId = 1113, spellId = 597, price = 750},
-        {name = "Conjured Rye", itemId = 1114, spellId = 6129, price = 1000},
-        {name = "Conjured Pumpernickel", itemId = 1487, spellId = 10144, price = 1500},
-        {name = "Conjured Sourdough", itemId = 8075, spellId = 10145, price = 2000},
-        {name = "Conjured Sweet Roll", itemId = 8076, spellId = 28612, price = 2500},
-        {name = "Conjured Cinnamon Roll", itemId = 22895, spellId = 33717, price = 2500},
-        {name = "Conjured Croissant", itemId = 22019, spellId = 27091, price = 3000},
-        {name = "Conjured Mana Strudel", itemId = 34062, spellId = 43987, price = 3500}
-    },
-    waterItems = {
-        {name = "Conjured Water", itemId = 5350, spellId = 5504, price = 500},
-        {name = "Conjured Fresh Water", itemId = 2288, spellId = 5505, price = 750},
-        {name = "Conjured Purified Water", itemId = 2136, spellId = 5506, price = 1000},
-        {name = "Conjured Spring Water", itemId = 3772, spellId = 10138, price = 1500},
-        {name = "Conjured Mineral Water", itemId = 8077, spellId = 10139, price = 2000},
-        {name = "Conjured Sparkling Water", itemId = 8078, spellId = 10140, price = 2500},
-        {name = "Conjured Crystal Water", itemId = 8079, spellId = 28612, price = 2500},
-        {name = "Conjured Mountain Spring Water", itemId = 22018, spellId = 27090, price = 3000},
-        {name = "Conjured Glacier Water", itemId = 34063, spellId = 43987, price = 3500}
-    },
+    foodItems = {{
+        name = "Conjured Sweet Roll",
+        itemId = 8076,
+        spellName = "Conjure Food",
+        rank = 6,
+        price = 2500
+    }, {
+        name = "Conjured Cinnamon Roll",
+        itemId = 22895,
+        spellName = "Conjure Food",
+        rank = 7,
+        price = 2500
+    }, {
+        name = "Conjured Croissant",
+        itemId = 22019,
+        spellName = "Conjure Food",
+        rank = 8,
+        price = 3000
+    }, {
+        name = "Conjured Mana Strudel",
+        itemId = 34062,
+        spellName = "Conjure Food",
+        rank = 9,
+        price = 3500
+    }},
+    waterItems = {{
+        name = "Conjured Sparkling Water",
+        itemId = 8078,
+        spellName = "Conjure Water",
+        rank = 6,
+        price = 2500
+    }, {
+        name = "Conjured Crystal Water",
+        itemId = 8079,
+        spellName = "Conjure Water",
+        rank = 7,
+        price = 2500
+    }, {
+        name = "Conjured Mountain Spring Water",
+        itemId = 22018,
+        spellName = "Conjure Water",
+        rank = 8,
+        price = 3000
+    }, {
+        name = "Conjured Glacier Water",
+        itemId = 34063,
+        spellName = "Conjure Water",
+        rank = 9,
+        price = 3500
+    }},
 
     -- Legacy price structure (kept for backward compatibility)
     prices = {
         food = {
-            ["Conjured Muffin"] = 500,
-            ["Conjured Bread"] = 750,
-            ["Conjured Rye"] = 1000,
-            ["Conjured Pumpernickel"] = 1500,
-            ["Conjured Sourdough"] = 2000,
             ["Conjured Sweet Roll"] = 2500,
             ["Conjured Cinnamon Roll"] = 2500,
             ["Conjured Croissant"] = 3000,
             ["Conjured Mana Strudel"] = 3500
         },
         water = {
-            ["Conjured Water"] = 500,
-            ["Conjured Fresh Water"] = 750,
-            ["Conjured Purified Water"] = 1000,
-            ["Conjured Spring Water"] = 1500,
-            ["Conjured Mineral Water"] = 2000,
             ["Conjured Sparkling Water"] = 2500,
             ["Conjured Crystal Water"] = 2500,
             ["Conjured Mountain Spring Water"] = 3000,
@@ -120,8 +138,14 @@ ThicPortalSettings = {
     }
 }
 
+-- Initialize ThicPortalSettings with defaults if it doesn't exist
+-- This will be overwritten by saved variables when they load
+if not ThicPortalSettings then
+    ThicPortalSettings = DEFAULT_SETTINGS
+end
+
 -- Initialize Config.Settings immediately to ensure it's always available
-Config.Settings = ThicPortalSettings
+Config.Settings = DEFAULT_SETTINGS
 
 -- An object storing many of the addon's gold and trade settings (Version 1.2.2)
 ThicPortalsSaved = false
@@ -166,8 +190,17 @@ end
 
 -- Initialize saved variables
 function Config.initializeSavedVariables()
-    -- Define default settings
-    Config.Settings = ThicPortalSettings
+    -- Merge saved settings with defaults
+    -- If ThicPortalSettings is loaded from saved vars, merge it with defaults
+    -- Otherwise use defaults
+    if type(ThicPortalSettings) == "table" then
+        -- Merge saved settings into Config.Settings
+        Config.Settings = ThicPortalSettings
+    else
+        -- No saved settings, use defaults
+        Config.Settings = DEFAULT_SETTINGS
+        ThicPortalSettings = DEFAULT_SETTINGS
+    end
 
     if type(ThicPortalsSaved) ~= "table" then
         print("ThicPortalsSaved is not a table. Initializing.")
@@ -209,28 +242,28 @@ function Config.initializeSavedVariables()
     Config.Settings.ApproachMode = ApproachMode or Config.Settings.ApproachMode
 
     if not Config.Settings.toggleButtonPosition then
-        Config.Settings.toggleButtonPosition = ThicPortalSettings.toggleButtonPosition
+        Config.Settings.toggleButtonPosition = DEFAULT_SETTINGS.toggleButtonPosition
     end
     if not Config.Settings.enableFoodWaterSupport then
-        Config.Settings.enableFoodWaterSupport = ThicPortalSettings.enableFoodWaterSupport
+        Config.Settings.enableFoodWaterSupport = DEFAULT_SETTINGS.enableFoodWaterSupport
     end
     if not Config.Settings.disableSmartMatching then
-        Config.Settings.disableSmartMatching = ThicPortalSettings.disableSmartMatching
+        Config.Settings.disableSmartMatching = DEFAULT_SETTINGS.disableSmartMatching
     end
     if not Config.Settings.removeRealmFromInviteCommand then
-        Config.Settings.removeRealmFromInviteCommand = ThicPortalSettings.removeRealmFromInviteCommand
+        Config.Settings.removeRealmFromInviteCommand = DEFAULT_SETTINGS.removeRealmFromInviteCommand
     end
     if not Config.Settings.disableGlobalChannels then
-        Config.Settings.disableGlobalChannels = ThicPortalSettings.disableGlobalChannels
+        Config.Settings.disableGlobalChannels = DEFAULT_SETTINGS.disableGlobalChannels
     end
     if not Config.Settings.disableAFKProtection then
-        Config.Settings.disableAFKProtection = ThicPortalSettings.disableAFKProtection
+        Config.Settings.disableAFKProtection = DEFAULT_SETTINGS.disableAFKProtection
     end
     if not Config.Settings.FoodKeywords then
-        Config.Settings.FoodKeywords = ThicPortalSettings.FoodKeywords
+        Config.Settings.FoodKeywords = DEFAULT_SETTINGS.FoodKeywords
     end
     if not Config.Settings.WaterKeywords then
-        Config.Settings.WaterKeywords = ThicPortalSettings.WaterKeywords
+        Config.Settings.WaterKeywords = DEFAULT_SETTINGS.WaterKeywords
     end
 
     -- Override addonEnabled to false on startup
@@ -242,10 +275,10 @@ function Config.initializeSavedVariables()
 
     -- Added in 2.0.3
     if not Config.Settings.KeywordBanList then
-        Config.Settings.KeywordBanList = ThicPortalSettings.KeywordBanList or {}
+        Config.Settings.KeywordBanList = DEFAULT_SETTINGS.KeywordBanList or {}
     end
     if not Config.Settings.prices then
-        Config.Settings.prices = ThicPortalSettings.prices or {
+        Config.Settings.prices = DEFAULT_SETTINGS.prices or {
             food = {
                 ["Conjured Muffin"] = 500,
                 ["Conjured Bread"] = 750,
@@ -270,17 +303,14 @@ function Config.initializeSavedVariables()
             }
         }
     end
-    
+
     -- Initialize foodItems and waterItems structures (smart detection support)
-    if not Config.Settings.foodItems then
-        Config.Settings.foodItems = ThicPortalSettings.foodItems
-    end
-    if not Config.Settings.waterItems then
-        Config.Settings.waterItems = ThicPortalSettings.waterItems
-    end
-    
+    -- Always use defaults to ensure we have the latest structure with spellName+rank
+    Config.Settings.foodItems = DEFAULT_SETTINGS.foodItems
+    Config.Settings.waterItems = DEFAULT_SETTINGS.waterItems
+
     if not Config.Settings.maxSimultaneousTickets then
-        Config.Settings.maxSimultaneousTickets = ThicPortalSettings.maxSimultaneousTickets or 15
+        Config.Settings.maxSimultaneousTickets = DEFAULT_SETTINGS.maxSimultaneousTickets or 15
     end
 
     -- Remove old global variables if needed (Version 1.2.2)
