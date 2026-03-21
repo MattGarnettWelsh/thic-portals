@@ -59,6 +59,7 @@ local DEFAULT_SETTINGS = {
     approachMode = false,
     enableFoodWaterSupport = false,
     disableSmartMatching = false,
+    requireDestination = false,
     removeRealmFromInviteCommand = false,
     optionsPanelHidden = true,
     hideIcon = false,
@@ -249,6 +250,9 @@ function Config.initializeSavedVariables()
     end
     if not Config.Settings.disableSmartMatching then
         Config.Settings.disableSmartMatching = DEFAULT_SETTINGS.disableSmartMatching
+    end
+     if not Config.Settings.requireDestination then
+        Config.Settings.requireDestination = ThicPortalSettings.requireDestination
     end
     if not Config.Settings.removeRealmFromInviteCommand then
         Config.Settings.removeRealmFromInviteCommand = DEFAULT_SETTINGS.removeRealmFromInviteCommand
