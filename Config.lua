@@ -53,12 +53,26 @@ ThicPortalSettings = {
 
     prices = {
         food = {
-            ["Conjured Cinnamon Roll"] = 2500,
-            ["Conjured Sweet Roll"] = 2500
+            ["Conjured Muffin"] = 500,              -- Level 1
+            ["Conjured Bread"] = 750,               -- Level 5
+            ["Conjured Rye"] = 1000,                -- Level 15
+            ["Conjured Pumpernickel"] = 1500,       -- Level 25
+            ["Conjured Sourdough"] = 2000,          -- Level 35
+            ["Conjured Sweet Roll"] = 2500,         -- Level 45
+            ["Conjured Cinnamon Roll"] = 2500,      -- Level 55
+            ["Conjured Croissant"] = 3000,          -- Level 65 (TBC)
+            ["Conjured Mana Strudel"] = 3500        -- Level 70 (TBC)
         },
         water = {
-            ["Conjured Crystal Water"] = 2500,
-            ["Conjured Sparkling Water"] = 2500
+            ["Conjured Water"] = 500,               -- Level 1
+            ["Conjured Fresh Water"] = 750,         -- Level 5
+            ["Conjured Purified Water"] = 1000,     -- Level 15
+            ["Conjured Spring Water"] = 1500,       -- Level 25
+            ["Conjured Mineral Water"] = 2000,      -- Level 35
+            ["Conjured Sparkling Water"] = 2500,    -- Level 45
+            ["Conjured Crystal Water"] = 2500,      -- Level 55
+            ["Conjured Mountain Spring Water"] = 3000,  -- Level 65 (TBC)
+            ["Conjured Glacier Water"] = 3500       -- Level 70 (TBC)
         }
     },
 
@@ -192,12 +206,26 @@ function Config.initializeSavedVariables()
     if not Config.Settings.prices then
         Config.Settings.prices = ThicPortalSettings.prices or {
             food = {
-                ["Conjured Cinnamon Roll"] = 2500, -- 25 silver
-                ["Conjured Sweet Roll"] = 2500 -- 25 silver
+                ["Conjured Muffin"] = 500,
+                ["Conjured Bread"] = 750,
+                ["Conjured Rye"] = 1000,
+                ["Conjured Pumpernickel"] = 1500,
+                ["Conjured Sourdough"] = 2000,
+                ["Conjured Sweet Roll"] = 2500,
+                ["Conjured Cinnamon Roll"] = 2500,
+                ["Conjured Croissant"] = 3000,
+                ["Conjured Mana Strudel"] = 3500
             },
             water = {
-                ["Conjured Crystal Water"] = 2500, -- 25 silver
-                ["Conjured Sparkling Water"] = 2500 -- 25 silver
+                ["Conjured Water"] = 500,
+                ["Conjured Fresh Water"] = 750,
+                ["Conjured Purified Water"] = 1000,
+                ["Conjured Spring Water"] = 1500,
+                ["Conjured Mineral Water"] = 2000,
+                ["Conjured Sparkling Water"] = 2500,
+                ["Conjured Crystal Water"] = 2500,
+                ["Conjured Mountain Spring Water"] = 3000,
+                ["Conjured Glacier Water"] = 3500
             }
         }
     end
