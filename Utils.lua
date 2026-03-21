@@ -291,6 +291,62 @@ function Utils.formatCopperValue(totalCost)
     return formattedString
 end
 
+-- Function to check if a spell is known by the player
+function Utils.isSpellKnown(spellId)
+    if not spellId then return false end
+    return IsSpellKnown(spellId)
+end
+
+-- Function to get available food items (that the mage can conjure)
+function Utils.getAvailableFoodItems()
+    local availableItems = {}
+    for _, item in ipairs(Config.Settings.foodItems or {}) do
+        if Utils.isSpellKnown(item.spellId) then
+            table.insert(availableItems, item)
+        end
+    end
+    return availableItems
+end
+
+-- Function to get available water items (that the mage can conjure)
+function Utils.getAvailableWaterItems()
+    local availableItems = {}
+    for _, item in ipairs(Config.Settings.waterItems or {}) do
+        if Utils.isSpellKnown(item.spellId) then
+            table.insert(availableItems, item)
+        end
+    end
+    return availableItems
+end
+
+-- Function to get the highest tier food item the player has in inventory
+function Utils.getHighestTierFoodInInventory()
+    local availableFood = Utils.getAvailableFoodItems()
+    -- Iterate in reverse order (highest tier first)
+    for i = #availableFood, 1, -1 do
+        local item = availableFood[i]
+        local count = GetItemCount(item.itemId, false)
+        if count > 0 then
+            return item, count
+        end
+    end
+    return nil, 0
+end
+
+-- Function to get the highest tier water item the player has in inventory
+function Utils.getHighestTierWaterInInventory()
+    local availableWater = Utils.getAvailableWaterItems()
+    -- Iterate in reverse order (highest tier first)
+    for i = #availableWater, 1, -1 do
+        local item = availableWater[i]
+        local count = GetItemCount(item.itemId, false)
+        if count > 0 then
+            return item, count
+        end
+    end
+    return nil, 0
+end
+
 _G.Utils = Utils
 
 return Utils

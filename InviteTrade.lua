@@ -336,42 +336,23 @@ end
 
 -- Function to also send mana users a message with water and food stockpiles and none mana users food stock
 function InviteTrade.sendFoodAndWaterStockMessage(playerName, playerClass)
-    -- foodStock should be a string in the following format: "20 x Conjured Cinnamon Roll"
+    -- Use the new smart detection to get the highest tier items in inventory
+    local foodItem, foodCount = Utils.getHighestTierFoodInInventory()
+    local waterItem, waterCount = Utils.getHighestTierWaterInInventory()
+
     local foodStock = nil
-    -- waterStock should be a string in the following format: "20 x Conjured Crystal Water"
     local waterStock = nil
 
-    -- -- get the current party member count
-    -- local partyMemberCount = GetNumPartyMembers()
-
-    -- -- calculate new party member level by using the party member count
-    -- local level = UnitLevel("party" .. partyMemberCount)
-
-    -- print("|cff87CEEB[Thic-Portals]|r Calculated party member level: " .. level)
-
-    -- Check if the player has rank 6 food in their inventory
-    local foodCount = GetItemCount(8076, false)
-    if foodCount > 0 then
-        foodStock = foodCount .. " x Conjured Sweet Roll " .. "(20x: " ..
-                        Utils.formatCopperValue(Config.Settings.prices.food["Conjured Sweet Roll"] * 20) .. ")"
+    -- Build food stock message if food is available
+    if foodItem and foodCount > 0 then
+        foodStock = foodCount .. " x " .. foodItem.name .. " (20x: " ..
+                    Utils.formatCopperValue(foodItem.price * 20) .. ")"
     end
-    -- Check if the player has rank 7 food in their inventory
-    local foodCount = GetItemCount(22895, false)
-    if foodCount > 0 then
-        foodStock = foodCount .. " x Conjured Cinnamon Roll " .. "(20x: " ..
-                        Utils.formatCopperValue(Config.Settings.prices.food["Conjured Cinnamon Roll"] * 20) .. ")"
-    end
-    -- Check if the player has rank 6 water in their inventory
-    local waterCount = GetItemCount(8078, false)
-    if waterCount > 0 then
-        waterStock = waterCount .. " x Conjured Sparkling Water " .. "(20x: " ..
-                         Utils.formatCopperValue(Config.Settings.prices.water["Conjured Sparkling Water"] * 20) .. ")"
-    end
-    -- Check if the player has rank 7 water in their inventory
-    local waterCount = GetItemCount(8079, false)
-    if waterCount > 0 then
-        waterStock = waterCount .. " x Conjured Crystal Water " .. "(20x: " ..
-                         Utils.formatCopperValue(Config.Settings.prices.water["Conjured Crystal Water"] * 20) .. ")"
+
+    -- Build water stock message if water is available
+    if waterItem and waterCount > 0 then
+        waterStock = waterCount .. " x " .. waterItem.name .. " (20x: " ..
+                     Utils.formatCopperValue(waterItem.price * 20) .. ")"
     end
 
     -- If the player has no food or water in their inventory, we will not advertise it
@@ -386,7 +367,7 @@ function InviteTrade.sendFoodAndWaterStockMessage(playerName, playerClass)
 
     -- depending on the class of the player, we will advertise water or not
     if playerClass == "MAGE" or playerClass == "PRIEST" or playerClass == "WARLOCK" or playerClass == "DRUID" or
-        playerClass == "SHAMAN" then
+        playerClass == "SHAMAN" or playerClass == "PALADIN" then
         targetIsManaUser = true
     end
 

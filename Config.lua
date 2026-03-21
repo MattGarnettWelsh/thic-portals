@@ -64,28 +64,52 @@ ThicPortalSettings = {
     hideIcon = false,
     disableAFKProtection = false,
 
+    foodItems = {
+        {name = "Conjured Muffin", itemId = 5349, spellId = 587, price = 500},
+        {name = "Conjured Bread", itemId = 1113, spellId = 597, price = 750},
+        {name = "Conjured Rye", itemId = 1114, spellId = 6129, price = 1000},
+        {name = "Conjured Pumpernickel", itemId = 1487, spellId = 10144, price = 1500},
+        {name = "Conjured Sourdough", itemId = 8075, spellId = 10145, price = 2000},
+        {name = "Conjured Sweet Roll", itemId = 8076, spellId = 28612, price = 2500},
+        {name = "Conjured Cinnamon Roll", itemId = 22895, spellId = 33717, price = 2500},
+        {name = "Conjured Croissant", itemId = 22019, spellId = 27091, price = 3000},
+        {name = "Conjured Mana Strudel", itemId = 34062, spellId = 43987, price = 3500}
+    },
+    waterItems = {
+        {name = "Conjured Water", itemId = 5350, spellId = 5504, price = 500},
+        {name = "Conjured Fresh Water", itemId = 2288, spellId = 5505, price = 750},
+        {name = "Conjured Purified Water", itemId = 2136, spellId = 5506, price = 1000},
+        {name = "Conjured Spring Water", itemId = 3772, spellId = 10138, price = 1500},
+        {name = "Conjured Mineral Water", itemId = 8077, spellId = 10139, price = 2000},
+        {name = "Conjured Sparkling Water", itemId = 8078, spellId = 10140, price = 2500},
+        {name = "Conjured Crystal Water", itemId = 8079, spellId = 28612, price = 2500},
+        {name = "Conjured Mountain Spring Water", itemId = 22018, spellId = 27090, price = 3000},
+        {name = "Conjured Glacier Water", itemId = 34063, spellId = 43987, price = 3500}
+    },
+
+    -- Legacy price structure (kept for backward compatibility)
     prices = {
         food = {
-            ["Conjured Muffin"] = 500, -- Level 1
-            ["Conjured Bread"] = 750, -- Level 5
-            ["Conjured Rye"] = 1000, -- Level 15
-            ["Conjured Pumpernickel"] = 1500, -- Level 25
-            ["Conjured Sourdough"] = 2000, -- Level 35
-            ["Conjured Sweet Roll"] = 2500, -- Level 45
-            ["Conjured Cinnamon Roll"] = 2500, -- Level 55
-            ["Conjured Croissant"] = 3000, -- Level 65 (TBC)
-            ["Conjured Mana Strudel"] = 3500 -- Level 70 (TBC)
+            ["Conjured Muffin"] = 500,
+            ["Conjured Bread"] = 750,
+            ["Conjured Rye"] = 1000,
+            ["Conjured Pumpernickel"] = 1500,
+            ["Conjured Sourdough"] = 2000,
+            ["Conjured Sweet Roll"] = 2500,
+            ["Conjured Cinnamon Roll"] = 2500,
+            ["Conjured Croissant"] = 3000,
+            ["Conjured Mana Strudel"] = 3500
         },
         water = {
-            ["Conjured Water"] = 500, -- Level 1
-            ["Conjured Fresh Water"] = 750, -- Level 5
-            ["Conjured Purified Water"] = 1000, -- Level 15
-            ["Conjured Spring Water"] = 1500, -- Level 25
-            ["Conjured Mineral Water"] = 2000, -- Level 35
-            ["Conjured Sparkling Water"] = 2500, -- Level 45
-            ["Conjured Crystal Water"] = 2500, -- Level 55
-            ["Conjured Mountain Spring Water"] = 3000, -- Level 65 (TBC)
-            ["Conjured Glacier Water"] = 3500 -- Level 70 (TBC)
+            ["Conjured Water"] = 500,
+            ["Conjured Fresh Water"] = 750,
+            ["Conjured Purified Water"] = 1000,
+            ["Conjured Spring Water"] = 1500,
+            ["Conjured Mineral Water"] = 2000,
+            ["Conjured Sparkling Water"] = 2500,
+            ["Conjured Crystal Water"] = 2500,
+            ["Conjured Mountain Spring Water"] = 3000,
+            ["Conjured Glacier Water"] = 3500
         }
     },
 
@@ -246,6 +270,15 @@ function Config.initializeSavedVariables()
             }
         }
     end
+    
+    -- Initialize foodItems and waterItems structures (smart detection support)
+    if not Config.Settings.foodItems then
+        Config.Settings.foodItems = ThicPortalSettings.foodItems
+    end
+    if not Config.Settings.waterItems then
+        Config.Settings.waterItems = ThicPortalSettings.waterItems
+    end
+    
     if not Config.Settings.maxSimultaneousTickets then
         Config.Settings.maxSimultaneousTickets = ThicPortalSettings.maxSimultaneousTickets or 15
     end

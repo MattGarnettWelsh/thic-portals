@@ -137,11 +137,35 @@ local function addNumberEditBox(labelText, numberVar, callback)
 end
 
 -- Helper function to add price edit boxes for a category (food or water)
+-- Now smart: only shows items the player can actually conjure
 local function addPriceEditBoxes(group, category, prices)
-    for itemName, price in pairs(prices) do
-        local priceEditBox = addNumberEditBox(itemName .. ":", price, function(value)
-            prices[itemName] = value
-            print("|cff87CEEB[Thic-Portals]|r " .. itemName .. " price updated to " .. value .. ".")
+    local items = {}
+    
+    -- Get the list of items based on category
+    if category == "Food" then
+        items = Utils.getAvailableFoodItems()
+    elseif category == "Water" then
+        items = Utils.getAvailableWaterItems()
+    end
+    
+    -- If no items are available, show a message
+    if #items == 0 then
+        local noItemsLabel = AceGUI:Create("Label")
+        noItemsLabel:SetText("|cFFFF6B6BNo " .. category:lower() .. " spells known yet.|r")
+        noItemsLabel:SetFullWidth(true)
+        group:AddChild(noItemsLabel)
+        return
+    end
+    
+    -- Create edit boxes for each available item
+    for _, item in ipairs(items) do
+        local priceEditBox = addNumberEditBox(item.name .. ":", item.price, function(value)
+            -- Update the price in both the new structure and legacy structure
+            item.price = value
+            if prices and prices[item.name] then
+                prices[item.name] = value
+            end
+            print("|cff87CEEB[Thic-Portals]|r " .. item.name .. " price updated to " .. value .. ".")
         end)
         group:AddChild(priceEditBox)
     end
@@ -1248,7 +1272,7 @@ function UI.createOptionsPanel()
 
     -- Create a description for the food and water prices
     local foodWaterPricesDescription = AceGUI:Create("Label")
-    foodWaterPricesDescription:SetText("Set the prices for food and water in copper.")
+    foodWaterPricesDescription:SetText("Set the prices for food and water in copper. Only shows items you can conjure.")
     foodWaterPricesDescription:SetFontObject(GameFontHighlightSmall)
     foodWaterPricesDescription:SetFullWidth(true)
     scroll:AddChild(foodWaterPricesDescription)
