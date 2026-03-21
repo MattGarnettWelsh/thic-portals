@@ -154,7 +154,7 @@ function Config.initializeSavedVariables()
     Config.Settings.ApproachMode = ApproachMode or Config.Settings.ApproachMode
 
     if not Config.Settings.toggleButtonPosition then
-        Config.Settings.toggleButtonPosition = ThicPortalSettings.ToggleButtonPosition
+        Config.Settings.toggleButtonPosition = ThicPortalSettings.toggleButtonPosition
     end
     if not Config.Settings.enableFoodWaterSupport then
         Config.Settings.enableFoodWaterSupport = ThicPortalSettings.enableFoodWaterSupport
