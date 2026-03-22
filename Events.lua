@@ -8,6 +8,7 @@ local Events = {}
 _G.Events = Events
 
 Events.pendingInvites = {} -- Table to store pending invites with all relevant data
+Events.uiInitialized = false -- Flag to track if UI has been created
 
 -- Example structure:
 -- Events.pendingInvites["PlayerName"] = {
@@ -25,6 +26,40 @@ local function printEvent(event)
     if Config.Settings and Config.Settings.debugMode then
         print("|cff87CEEB[Thic-Portals]|r " .. event .. " event fired.")
     end
+end
+
+-- Function to initialize UI (called with delay to ensure spellbook is loaded)
+function Events.initializeUI()
+    if Events.uiInitialized then
+        return -- Already initialized
+    end
+
+    -- Final verification that spellbook is readable
+    local testSpell = GetSpellBookItemName(1, BOOKTYPE_SPELL)
+    if not testSpell then
+        print("|cff87CEEB[Thic-Portals]|r ERROR: Cannot initialize - spellbook not accessible!")
+        return
+    end
+
+    -- Mark as initialized
+    Events.uiInitialized = true
+
+    print("|cff87CEEB[Thic-Portals]|r Initializing UI with spellbook loaded...")
+
+    -- Print gold info to the console
+    Utils.printGoldInformation()
+
+    -- Create the in-game toggle button for the addon
+    UI.createToggleButton()
+
+    -- Create the in-game options panel for the addon
+    UI.createOptionsPanel()
+    UI.hideOptionsPanel()
+
+    -- Create the global interface options panel
+    UI.createInterfaceOptionsPanel()
+
+    print("|cff87CEEB[Thic-Portals]|r UI initialization complete!")
 end
 
 -- Function to handle consecutive leaves without payment
@@ -47,21 +82,38 @@ function Events.onEvent(self, event, ...)
     if event == "VARIABLES_LOADED" then
         printEvent(event)
 
-        -- Initialize saved variables
+        -- Initialize saved variables (doesn't need spellbook)
         Config.initializeSavedVariables()
 
-        -- Print gold info to the console
-        Utils.printGoldInformation()
+        return
+    end
 
-        -- Create the in-game toggle button for the addon
-        UI.createToggleButton()
+    if event == "PLAYER_ENTERING_WORLD" or event == "SPELLS_CHANGED" then
+        printEvent(event)
 
-        -- Create the in-game options panel for the addon
-        UI.createOptionsPanel()
-        UI.hideOptionsPanel()
+        -- Only initialize UI once, and only after spellbook is available
+        if not Events.uiInitialized then
+            -- Use a delayed initialization to ensure spellbook is fully loaded
+            -- This is especially important on first login when client is freshly started
+            C_Timer.After(2, function()
+                if Events.uiInitialized then
+                    return -- Already initialized
+                end
 
-        -- Create the global interface options panel
-        UI.createInterfaceOptionsPanel()
+                -- Verify spells are loaded by checking if we can read the spellbook
+                local testSpell = GetSpellBookItemName(1, BOOKTYPE_SPELL)
+                if not testSpell then
+                    -- Spellbook still not ready, try again with longer delay
+                    print("|cff87CEEB[Thic-Portals]|r Spellbook not ready yet, waiting...")
+                    C_Timer.After(3, function()
+                        Events.initializeUI()
+                    end)
+                    return
+                end
+
+                Events.initializeUI()
+            end)
+        end
 
         return
     end

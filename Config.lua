@@ -251,7 +251,7 @@ function Config.initializeSavedVariables()
     if not Config.Settings.disableSmartMatching then
         Config.Settings.disableSmartMatching = DEFAULT_SETTINGS.disableSmartMatching
     end
-     if not Config.Settings.requireDestination then
+    if not Config.Settings.requireDestination then
         Config.Settings.requireDestination = ThicPortalSettings.requireDestination
     end
     if not Config.Settings.removeRealmFromInviteCommand then
