@@ -84,6 +84,9 @@ function Events.onEvent(self, event, ...)
 
         -- Initialize saved variables (doesn't need spellbook)
         Config.initializeSavedVariables()
+        
+        -- Reset daily gold if it's a new day
+        Utils.resetDailyGoldIfNeeded()
 
         return
     end
