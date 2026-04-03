@@ -138,6 +138,36 @@ function Events.onEvent(self, event, ...)
         end
     end
 
+    if event == "CHAT_MSG_SYSTEM" and Config.Settings.removeTicketForFailedInvite then
+        printEvent(event)
+        local args = {...}
+        local text = args[1]
+        local playerName = args[2]
+
+        local failedEvents = {
+            ERR_GROUP_FULL, -- "Your party is full."
+            ERR_ALREADY_IN_GROUP_S, -- "%s is already in a group."
+            ERR_DECLINE_GROUP_S -- "%s declines your group invitation."
+        }
+
+        -- Replace the %s in the error messages (if any) with the player's name
+        for _, eventText in ipairs(failedEvents) do
+            local checkString = eventText:gsub("%%s", playerName)
+
+            -- Check the string against the system message
+            if text:find(checkString) then
+                print("|cff87CEEB[Thic-Portals]|r " .. text .. " Removing pending ticket.")
+
+                for sender, _ in pairs(Events.pendingInvites) do
+                    if sender == playerName then
+                        table.remove(Events.pendingInvites, sender)
+                        break
+                    end
+                end
+            end
+        end
+    end
+
     if event == "CHAT_MSG_SAY" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_PARTY" or
         checkGlobal then
         printEvent(event)

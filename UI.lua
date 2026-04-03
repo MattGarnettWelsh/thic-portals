@@ -30,6 +30,7 @@ UI.removeRealmFromInviteCommandCheckbox = AceGUI:Create("CheckBox");
 UI.addonEnabledCheckbox = AceGUI:Create("CheckBox");
 UI.disableGlobalChannelsCheckbox = AceGUI:Create("CheckBox");
 UI.disableAFKProtectionCheckbox = AceGUI:Create("CheckBox");
+UI.removeTicketForFailedInviteCheckbox = AceGUI:Create("CheckBox");
 UI.soundEnabledCheckbox = AceGUI:Create("CheckBox");
 UI.debugModeCheckbox = AceGUI:Create("CheckBox");
 
@@ -1202,6 +1203,17 @@ function UI.createOptionsPanel()
             end
         end,
         "Disables the AFK protection feature which is in place to prevent potentially over-inviting players if the user forgets the addon is running. Two players in a row leaving the party without payment triggers shop close.")
+
+    -- Remove Ticket For Failed invite Checkbox
+    addCheckbox(checkboxGroup, "Remove Ticket For Failed Invite", UI.removeTicketForFailedInviteCheckbox, Config.Settings.removeTicketForFailedInvite,
+        function(_, _, value)
+            Config.Settings.removeTicketForFailedInvite = value
+            if Config.Settings.removeTicketForFailedInvite then
+                print("|cff87CEEB[Thic-Portals]|r Remove ticket for failed invite enabled.")
+            else
+                print("|cff87CEEB[Thic-Portals]|r Remove ticket for failed invite disabled.")
+            end
+        end, "When enabled, removes tickets as soon as the invite fails (e.g. player is already in a group).")
 
     -- Hide Icon Checkbox
     addCheckbox(checkboxGroup, "Hide Icon", UI.hideIconCheckbox, Config.Settings.hideIcon, function(_, _, value)
