@@ -88,8 +88,7 @@ function InviteTrade.createPendingInvite(playerName, playerClass, sender, messag
         originalMessage = message,
         hasJoined = false,
         hasPaid = false,
-        travelled = false,
-        inviteFailed = false
+        travelled = false
     }
 
     InviteTrade.setSenderExpiryTimer(playerName)
@@ -185,7 +184,7 @@ function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, mes
     -- Check if we've reached the maximum number of simultaneous tickets
     local currentTicketCount = 0
     for _, inviteData in pairs(Events.pendingInvites) do
-        if not inviteData.inviteFailed then
+        if inviteData.hasJoined then
             currentTicketCount = currentTicketCount + 1
         end
     end
