@@ -64,7 +64,6 @@ local DEFAULT_SETTINGS = {
     optionsPanelHidden = true,
     hideIcon = false,
     disableAFKProtection = false,
-    removeTicketForFailedInvite = false,
 
     foodItems = {{
         name = "Conjured Sweet Roll",
@@ -316,10 +315,6 @@ function Config.initializeSavedVariables()
 
     if not Config.Settings.maxSimultaneousTickets then
         Config.Settings.maxSimultaneousTickets = DEFAULT_SETTINGS.maxSimultaneousTickets or 15
-    end
-
-    if not Config.Settings.removeTicketForFailedInvite then
-        Config.Settings.removeTicketForFailedInvite = DEFAULT_SETTINGS.removeTicketForFailedInvite
     end
 
     -- Remove old global variables if needed (Version 1.2.2)

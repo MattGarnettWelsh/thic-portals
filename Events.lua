@@ -18,6 +18,7 @@ Events.uiInitialized = false -- Flag to track if UI has been created
 --     destination = "Darna",
 --     hasJoined = false,
 --     hasPaid = false,
+--     inviteFailed = false,
 --     ticketFrame = nil, -- Reference to the ticket frame for this player
 --     targetted = false, -- Whether this player is currently targeted
 -- }
@@ -138,30 +139,31 @@ function Events.onEvent(self, event, ...)
         end
     end
 
-    if event == "CHAT_MSG_SYSTEM" and Config.Settings.removeTicketForFailedInvite then
+    if event == "CHAT_MSG_SYSTEM" then
         printEvent(event)
         local args = {...}
         local text = args[1]
         local playerName = args[2]
 
-        local failedEvents = {
-            ERR_GROUP_FULL, -- "Your party is full."
-            ERR_ALREADY_IN_GROUP_S, -- "%s is already in a group."
-            ERR_DECLINE_GROUP_S -- "%s declines your group invitation."
+        local failedEvents = {ERR_GROUP_FULL, -- "Your party is full."
+        ERR_ALREADY_IN_GROUP_S, -- "%s is already in a group."
+        ERR_DECLINE_GROUP_S -- "%s declines your group invitation."
         }
 
         -- Replace the %s in the error messages (if any) with the player's name
         for _, eventText in ipairs(failedEvents) do
-            local checkString = eventText:gsub("%%s", playerName)
+            local checkString = eventText
+            if playerName and eventText:find("%%s", 1, true) then
+                checkString = eventText:gsub("%%s", playerName)
+            end
 
             -- Check the string against the system message
-            if text:find(checkString) then
-                print("|cff87CEEB[Thic-Portals]|r " .. text .. " Removing pending ticket.")
-
-                for sender, _ in pairs(Events.pendingInvites) do
-                    if sender == playerName then
-                        table.remove(Events.pendingInvites, sender)
-                        break
+            if text and text:find(checkString, 1, true) then
+                if Events.pendingInvites[playerName] then
+                    Events.pendingInvites[playerName].inviteFailed = true
+                    if Config.Settings.debugMode then
+                        print("|cff87CEEB[Thic-Portals]|r " .. text ..
+                                  " Marked ticket as inactive due to failed invite.")
                     end
                 end
             end
