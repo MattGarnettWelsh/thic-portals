@@ -1168,8 +1168,8 @@ function UI.createOptionsPanel()
         "Disables advanced smart matching algorithms and only uses the predefined common phrases to match requests (configurable below).")
 
     -- Require destination before inviting
-    addCheckbox(checkboxGroup, "Require Destination", UI.requireDestinationCheckbox,
-        Config.Settings.requireDestination, function(_, _, value)
+    addCheckbox(checkboxGroup, "Require Destination", UI.requireDestinationCheckbox, Config.Settings.requireDestination,
+        function(_, _, value)
             Config.Settings.requireDestination = value
             if Config.Settings.requireDestination then
                 print("|cff87CEEB[Thic-Portals]|r Require destination enabled.")

@@ -183,8 +183,10 @@ end
 function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, message, destinationOnly)
     -- Check if we've reached the maximum number of simultaneous tickets
     local currentTicketCount = 0
-    for _ in pairs(Events.pendingInvites) do
-        currentTicketCount = currentTicketCount + 1
+    for _, inviteData in pairs(Events.pendingInvites) do
+        if inviteData.hasJoined then
+            currentTicketCount = currentTicketCount + 1
+        end
     end
 
     if currentTicketCount >= Config.Settings.maxSimultaneousTickets then
@@ -232,7 +234,8 @@ function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, mes
     if matched then
         if Config.Settings.requireDestination and not destinationKeyword then
             if Config.Settings.debugMode then
-                print("|cff87CEEB[Thic-Portals]|r Invite match found from " .. playerName .. ", but no (valid) destination keyword detected and Require Destination is enabled. Not sending invite.")
+                print("|cff87CEEB[Thic-Portals]|r Invite match found from " .. playerName ..
+                          ", but no (valid) destination keyword detected and Require Destination is enabled. Not sending invite.")
             end
             return
         end
