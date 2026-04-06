@@ -149,6 +149,18 @@ function handleCommand(msg)
         -- Test the detection function directly
         local testResult = Utils.isSpellRankKnown("Conjure Food", 7)
         print("|cff87CEEB[Thic-Portals]|r Direct test - isSpellRankKnown('Conjure Food', 7) = " .. tostring(testResult))
+    elseif command == "tickets" then
+        local totalTickets = 0
+        print("|cff87CEEB[Thic-Portals]|r Listing current tickets")
+        for playerName, ticket in pairs(Events.pendingInvites) do
+            print("|cff87CEEB[Thic-Portals]|r " .. string.format("|Hplayer:%s|h[%s]|h", playerName, playerName) ..
+                  " To: " .. (ticket.destination or "unknown") ..
+                  " | Joined: " .. tostring(ticket.hasJoined) ..
+                  " | Paid: " .. tostring(ticket.hasPaid)
+            )
+            totalTickets = totalTickets + 1
+        end
+        print("|cff87CEEB[Thic-Portals]|r Total tickets: " .. totalTickets)
     elseif command == "help" then
         print("|cff87CEEB[Thic-Portals]|r Usage:")
         print("/Tp show - Show the addon button")
@@ -157,6 +169,7 @@ function handleCommand(msg)
         print("/Tp msg [message] - Set the invite message")
         print("/Tp debug on/off - Enable or disable debug mode")
         print("/Tp checkspells - Check what conjure spells are detected")
+        print("/Tp tickets - Show current tickets")
         print("/Tp author - The creator")
         print("/Tp help - Show this help message")
         print("/Tp keywords add/remove intent/destination/service [keyword] - Add or remove a keyword")
