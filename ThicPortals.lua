@@ -149,6 +149,18 @@ function handleCommand(msg)
         -- Test the detection function directly
         local testResult = Utils.isSpellRankKnown("Conjure Food", 7)
         Utils.print("Direct test - isSpellRankKnown('Conjure Food', 7) = " .. tostring(testResult))
+    elseif command == "tickets" then
+        local totalTickets = 0
+        Utils.print("Listing current tickets")
+        for playerName, ticket in pairs(Events.pendingInvites) do
+            Utils.print(string.format("|Hplayer:%s|h[%s]|h", playerName, playerName) ..
+                  " To: " .. (ticket.destination or "unknown") ..
+                  " | Joined: " .. tostring(ticket.hasJoined) ..
+                  " | Paid: " .. tostring(ticket.hasPaid)
+            )
+            totalTickets = totalTickets + 1
+        end
+        Utils.print("Total tickets: " .. totalTickets)
     elseif command == "help" then
         Utils.print("Usage:")
         print("/Tp show - Show the addon button")
@@ -157,6 +169,7 @@ function handleCommand(msg)
         print("/Tp msg [message] - Set the invite message")
         print("/Tp debug on/off - Enable or disable debug mode")
         print("/Tp checkspells - Check what conjure spells are detected")
+        print("/Tp tickets - Show current tickets")
         print("/Tp author - The creator")
         print("/Tp help - Show this help message")
         print("/Tp keywords add/remove intent/destination/service [keyword] - Add or remove a keyword")
