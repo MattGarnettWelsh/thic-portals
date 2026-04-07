@@ -49,7 +49,7 @@ local function updatePendingInviteDestination(playerName, message)
             Events.pendingInvites[playerName].destinationValue:SetText(destinationKeyword)
         end
 
-        print("|cff87CEEB[Thic-Portals]|r Updated destination for " .. playerName .. " to " .. destinationKeyword)
+        Utils.print("Updated destination for " .. playerName .. " to " .. destinationKeyword)
 
         if Events.pendingInvites[playerName].actionButton then
             -- Set the icon texture for the portal spell
@@ -74,7 +74,7 @@ function InviteTrade.invitePlayer(sender)
 
     playMatchSound()
 
-    print("|cff87CEEB[Thic-Portals]|r Invited " .. sender .. " to the group.")
+    Utils.print("Invited " .. sender .. " to the group.")
 end
 
 -- Function to create a pending invite entry
@@ -100,14 +100,12 @@ function InviteTrade.handleCommonPhraseInvite(message)
     local destinationPosition, destinationKeyword = Utils.findKeywordPosition(message,
         Config.Settings.DestinationKeywords)
 
-    if Config.Settings.debugMode then
-        if phrase then
-            print("|cff87CEEB[Thic-Portals]|r [Common-phrase-invite] Matched on common phrase: " .. phrase)
-            print("|cff87CEEB[Thic-Portals]|r [Common-phrase-invite] Destination keyword: " ..
-                      (destinationKeyword or "none"))
-        else
-            print("|cff87CEEB[Thic-Portals]|r [Common-phrase-invite] Failed to match via common phrase")
-        end
+    if phrase then
+        Utils.debugPrint("[Common-phrase-invite] Matched on common phrase: " .. phrase)
+        Utils.debugPrint("[Common-phrase-invite] Destination keyword: " ..
+                    (destinationKeyword or "none"))
+    else
+        Utils.debugPrint("[Common-phrase-invite] Failed to match via common phrase")
     end
 
     return phrase, destinationKeyword
@@ -118,13 +116,11 @@ function InviteTrade.handleDestinationOnlyInvite(message)
     local destinationPosition, destinationKeyword = Utils.findKeywordPosition(message,
         Config.Settings.DestinationKeywords)
 
-    if Config.Settings.debugMode then
-        if destinationPosition then
-            print("|cff87CEEB[Thic-Portals]|r [Destination-only-invite] Matched on destination keyword: " ..
-                      destinationKeyword)
-        else
-            print("|cff87CEEB[Thic-Portals]|r [Destination-only-invite] Failed to match via destination keyword")
-        end
+    if destinationPosition then
+        Utils.debugPrint("[Destination-only-invite] Matched on destination keyword: " ..
+                    destinationKeyword)
+    else
+        Utils.debugPrint("[Destination-only-invite] Failed to match via destination keyword")
     end
 
     local matched = destinationPosition and true or false
@@ -139,10 +135,8 @@ function InviteTrade.handleAdvancedKeywordInvite(message)
 
     local intentPosition, intentKeyword = Utils.findKeywordPosition(message, Config.Settings.IntentKeywords)
     if intentPosition then
-        if Config.Settings.debugMode then
-            print("|cff87CEEB[Thic-Portals]|r [Advanced-keyword-invite] Matched on intent keyword: " .. intentKeyword ..
-                      " (position: " .. intentPosition .. ")")
-        end
+        Utils.debugPrint("[Advanced-keyword-invite] Matched on intent keyword: " .. intentKeyword ..
+                    " (position: " .. intentPosition .. ")")
 
         local servicePosition, serviceKeyword = Utils.findKeywordPosition(message, Config.Settings.ServiceKeywords)
         local destinationPosition, destKeyword = Utils.findKeywordPosition(message, Config.Settings.DestinationKeywords)
@@ -151,29 +145,20 @@ function InviteTrade.handleAdvancedKeywordInvite(message)
             matched = true
             destinationKeyword = destKeyword
 
-            if Config.Settings.debugMode then
-                print("|cff87CEEB[Thic-Portals]|r [Advanced-keyword-invite] Matched on service keyword: " ..
-                          serviceKeyword .. " (position: " .. servicePosition .. ")")
+            Utils.debugPrint("[Advanced-keyword-invite] Matched on service keyword: " ..
+                        serviceKeyword .. " (position: " .. servicePosition .. ")")
 
-                if destinationPosition then
-                    print("|cff87CEEB[Thic-Portals]|r [Advanced-keyword-invite] Matched on destination keyword: " ..
-                              destKeyword .. " (position: " .. destinationPosition .. ")")
-                else
-                    print(
-                        "|cff87CEEB[Thic-Portals]|r [Advanced-keyword-invite] Failed to match via advanced keyword matching - no destination keyword found.")
-                end
+            if destinationPosition then
+                Utils.debugPrint("[Advanced-keyword-invite] Matched on destination keyword: " ..
+                            destKeyword .. " (position: " .. destinationPosition .. ")")
+            else
+                Utils.debugPrint("[Advanced-keyword-invite] Failed to match via advanced keyword matching - no destination keyword found.")
             end
         else
-            if Config.Settings.debugMode then
-                print(
-                    "|cff87CEEB[Thic-Portals]|r [Advanced-keyword-invite] Failed to match via advanced keyword matching - no service keyword found.")
-            end
+            Utils.debugPrint("[Advanced-keyword-invite] Failed to match via advanced keyword matching - no service keyword found.")
         end
     else
-        if Config.Settings.debugMode then
-            print(
-                "|cff87CEEB[Thic-Portals]|r [Advanced-keyword-invite] Failed to match via advanced keyword matching - no intent keyword found.")
-        end
+        Utils.debugPrint("[Advanced-keyword-invite] Failed to match via advanced keyword matching - no intent keyword found.")
     end
 
     return matched, destinationKeyword
@@ -190,33 +175,26 @@ function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, mes
     end
 
     if currentTicketCount >= Config.Settings.maxSimultaneousTickets then
-        if Config.Settings.debugMode then
-            print("[Thic-Portals] Maximum simultaneous tickets (" .. Config.Settings.maxSimultaneousTickets ..
-                      ") reached. Ignoring invite for: " .. playerName)
-        end
+        Utils.debugPrint("Maximum simultaneous tickets (" .. Config.Settings.maxSimultaneousTickets ..
+                    ") reached. Ignoring invite for: " .. playerName)
         return
     end
 
     -- Here we deal with the player ban list
     if Utils.isPlayerBanned(sender) then
-        if Config.Settings.debugMode then
-            print("|cff87CEEB[Thic-Portals]|r Player " .. sender .. " is on the ban list. No invite sent.")
-        end
+        Utils.debugPrint("Player " .. sender .. " is on the ban list. No invite sent.")
         return
     end
 
     -- Here we deal with the keyword ban list
     if Utils.messageHasPhraseOrKeyword(message, Config.Settings.KeywordBanList) then
-        -- If debug mode
-        if Config.Settings.debugMode then
-            print("|cff87CEEB[Thic-Portals]|r Player " .. sender .. " used a banned keyword. No invite sent.")
-        end
+        Utils.debugPrint("Player " .. sender .. " used a banned keyword. No invite sent.")
         return
     end
 
     -- Here we deal with potential invite cooldowns, this should only return early if the player hasn't joined yet
     if stillOnCooldown(playerName) then
-        print("|cff87CEEB[Thic-Portals]|r Player " .. sender .. " is still on invite cooldown.")
+        Utils.print("Player " .. sender .. " is still on invite cooldown.")
         return
     end
 
@@ -233,10 +211,8 @@ function InviteTrade.handleInviteAndMessage(sender, playerName, playerClass, mes
 
     if matched then
         if Config.Settings.requireDestination and not destinationKeyword then
-            if Config.Settings.debugMode then
-                print("|cff87CEEB[Thic-Portals]|r Invite match found from " .. playerName ..
-                          ", but no (valid) destination keyword detected and Require Destination is enabled. Not sending invite.")
-            end
+            Utils.debugPrint("Invite match found from " .. playerName ..
+                        ", but no (valid) destination keyword detected and Require Destination is enabled. Not sending invite.")
             return
         end
         InviteTrade.invitePlayer(sender)
@@ -251,7 +227,7 @@ end
 function InviteTrade.setSenderExpiryTimer(playerName)
     C_Timer.After(180, function()
         if Events.pendingInvites[playerName] then
-            print("|cff87CEEB[Thic-Portals]|r Invite for " .. playerName .. " expired.")
+            Utils.print("Invite for " .. playerName .. " expired.")
             Events.pendingInvites[playerName] = nil
         end
     end)
@@ -271,14 +247,12 @@ function InviteTrade.watchForPlayerProximity(sender)
         if UnitInParty(sender) then
             if Utils.isPlayerWithinRange(sender, Config.Settings.distanceInferringClose) then
                 if not flagProximityReached then
-                    print("|cff87CEEB[Thic-Portals]|r " .. sender .. " is nearby and might be taking the portal.")
+                    Utils.print(sender .. " is nearby and might be taking the portal.")
                     flagProximityReached = true
                 end
             elseif flagProximityReached and
                 not Utils.isPlayerWithinRange(sender, Config.Settings.distanceInferringTravelled) then
-                if Config.Settings.debugMode then
-                    print("|cff87CEEB[Thic-Portals]|r " .. sender .. " has moved away, assuming they took the portal.")
-                end
+                Utils.debugPrint(sender .. " has moved away, assuming they took the portal.")
 
                 if Events.pendingInvites[sender] then
                     Events.pendingInvites[sender].travelled = true
@@ -297,15 +271,14 @@ end
 
 -- Function to check if there was a tip in the trade
 function InviteTrade.checkTradeTip()
-    print("|cff87CEEB[Thic-Portals]|r Checking trade tip...");
+    Utils.print("Checking trade tip...");
 
     local copper = tonumber(Config.currentTraderMoney);
     local silver = math.floor((copper % 10000) / 100);
     local gold = math.floor(copper / 10000);
     local remainingCopper = copper % 100;
 
-    print(
-        string.format("|cff87CEEB[Thic-Portals]|r Received %dg %ds %dc from the trade.", gold, silver, remainingCopper));
+    Utils.print(string.format("Received %dg %ds %dc from the trade.", gold, silver, remainingCopper));
 
     if gold > 0 or silver > 0 or remainingCopper > 0 then
         Utils.incrementTradesCompleted();
@@ -368,8 +341,7 @@ function InviteTrade.sendFoodAndWaterStockMessage(playerName, playerClass)
     -- If the player has no food or water in their inventory, we will not advertise it
     if not foodStock and not waterStock then
         -- Print a warning to the player that they're out of stock
-        print(
-            "|cff87CEEB[Thic-Portals]|r You have run out of food and water stock. Please restock or disable food and water support.")
+        Utils.print("You have run out of food and water stock. Please restock or disable food and water support.")
         return
     end
 
@@ -382,10 +354,8 @@ function InviteTrade.sendFoodAndWaterStockMessage(playerName, playerClass)
     end
 
     -- if debug mode log both food and water stock
-    if Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r Food stock: " .. (foodStock or "none"))
-        print("|cff87CEEB[Thic-Portals]|r Water stock: " .. (waterStock or "none"))
-    end
+    Utils.debugPrint("Food stock: " .. (foodStock or "none"))
+    Utils.debugPrint("Water stock: " .. (waterStock or "none"))
 
     if targetIsManaUser then
         if waterStock and foodStock then
