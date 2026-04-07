@@ -34,30 +34,30 @@ function handleCommand(msg)
 
     if command == "on" then
         Config.Settings.addonEnabled = true
-        print("|cff87CEEB[Thic-Portals]|r Addon enabled.")
+        Utils.print("Addon enabled.")
         UI.addonEnabledCheckbox:SetValue(true)
     elseif command == "off" then
         Config.Settings.addonEnabled = false
-        print("|cff87CEEB[Thic-Portals]|r Addon disabled.")
+        Utils.print("Addon disabled.")
         UI.addonEnabledCheckbox:SetValue(false)
     elseif command == "show" then
         UI.showToggleButton()
-        print("|cff87CEEB[Thic-Portals]|r Addon management icon displayed.")
+        Utils.print("Addon management icon displayed.")
     elseif command == "reset" then
         UI.resetToggleButtonPosition()
-        print("|cff87CEEB[Thic-Portals]|r Addon management icon position reset.")
+        Utils.print("Addon management icon position reset.")
     elseif command == "msg" then
         Config.Settings.inviteMessage = rest
-        print("|cff87CEEB[Thic-Portals]|r Invite message set to: " .. rest)
+        Utils.print("Invite message set to: " .. rest)
     elseif command == "debug" then
         if rest == "on" then
             Config.Settings.debugMode = true
-            print("|cff87CEEB[Thic-Portals]|r Debug mode enabled.")
+            Utils.print("Debug mode enabled.")
         elseif rest == "off" then
             Config.Settings.debugMode = false
-            print("|cff87CEEB[Thic-Portals]|r Debug mode disabled.")
+            Utils.print("Debug mode disabled.")
         else
-            print("|cff87CEEB[Thic-Portals]|r Usage: /Tp debug on/off - Enable or disable debug mode")
+            Utils.print("Usage: /Tp debug on/off - Enable or disable debug mode")
         end
     elseif command == "keywords" then
         local action, keywordType, keyword = rest:match("^(%S*)%s*(%S*)%s*(.-)$")
@@ -70,36 +70,36 @@ function handleCommand(msg)
             elseif keywordType == "service" then
                 keywordTable = Config.Settings.ServiceKeywords
             else
-                print("|cff87CEEB[Thic-Portals]|r Invalid keyword type. Use 'intent', 'destination', or 'service'.")
+                Utils.print("Invalid keyword type. Use 'intent', 'destination', or 'service'.")
                 return
             end
             if action == "add" then
                 table.insert(keywordTable, keyword)
-                print("|cff87CEEB[Thic-Portals]|r Added keyword to " .. keywordType .. ": " .. keyword)
+                Utils.print("Added keyword to " .. keywordType .. ": " .. keyword)
             elseif action == "remove" then
                 for i, k in ipairs(keywordTable) do
                     if k == keyword then
                         table.remove(keywordTable, i)
-                        print("|cff87CEEB[Thic-Portals]|r Removed keyword from " .. keywordType .. ": " .. keyword)
+                        Utils.print("Removed keyword from " .. keywordType .. ": " .. keyword)
                         break
                     end
                 end
             else
-                print("|cff87CEEB[Thic-Portals]|r Invalid action. Use 'add' or 'remove'.")
+                Utils.print("Invalid action. Use 'add' or 'remove'.")
             end
         else
-            print("|cff87CEEB[Thic-Portals]|r Usage: /Tp keywords add/remove intent/destination/service [keyword]")
+            Utils.print("Usage: /Tp keywords add/remove intent/destination/service [keyword]")
         end
     elseif command == "cooldown" then
         local seconds = tonumber(rest)
         if seconds then
             Config.Settings.inviteCooldown = seconds
-            print("|cff87CEEB[Thic-Portals]|r Invite cooldown set to " .. seconds .. " seconds.")
+            Utils.print("Invite cooldown set to " .. seconds .. " seconds.")
         else
-            print("|cff87CEEB[Thic-Portals]|r Usage: /Tp cooldown [seconds] - Set the invite cooldown period")
+            Utils.print("Usage: /Tp cooldown [seconds] - Set the invite cooldown period")
         end
     elseif command == "checkspells" then
-        print("|cff87CEEB[Thic-Portals]|r Scanning spellbook for Conjure spells...")
+        Utils.print("Scanning spellbook for Conjure spells...")
         local i = 1
         local foundFood = false
         local foundWater = false
@@ -109,7 +109,7 @@ function handleCommand(msg)
                 break
             end
             if spellName == "Conjure Food" or spellName == "Conjure Water" then
-                print("|cff87CEEB[Thic-Portals]|r Found: " .. spellName .. " (" .. (spellRank or "no rank") .. ")")
+                Utils.print("Found: " .. spellName .. " (" .. (spellRank or "no rank") .. ")")
                 if spellName == "Conjure Food" then
                     foundFood = true
                 end
@@ -120,37 +120,37 @@ function handleCommand(msg)
             i = i + 1
         end
         if not foundFood and not foundWater then
-            print("|cff87CEEB[Thic-Portals]|r No Conjure spells found in spellbook!")
+            Utils.print("No Conjure spells found in spellbook!")
         end
 
         -- Debug: Check config structure
         if not Config.Settings.foodItems then
-            print("|cff87CEEB[Thic-Portals]|r ERROR: Config.Settings.foodItems is nil!")
+            Utils.print("ERROR: Config.Settings.foodItems is nil!")
         else
-            print("|cff87CEEB[Thic-Portals]|r Config has " .. #Config.Settings.foodItems .. " food items defined.")
+            Utils.print("Config has " .. #Config.Settings.foodItems .. " food items defined.")
             if #Config.Settings.foodItems > 0 then
                 local item = Config.Settings.foodItems[1]
-                print("|cff87CEEB[Thic-Portals]|r Sample food item: name=" .. (item.name or "nil") .. ", spellName=" ..
+                Utils.print("Sample food item: name=" .. (item.name or "nil") .. ", spellName=" ..
                           (item.spellName or "nil") .. ", rank=" .. (item.rank or "nil"))
             end
         end
 
         if not Config.Settings.waterItems then
-            print("|cff87CEEB[Thic-Portals]|r ERROR: Config.Settings.waterItems is nil!")
+            Utils.print("ERROR: Config.Settings.waterItems is nil!")
         else
-            print("|cff87CEEB[Thic-Portals]|r Config has " .. #Config.Settings.waterItems .. " water items defined.")
+            Utils.print("Config has " .. #Config.Settings.waterItems .. " water items defined.")
         end
 
         local availableFood = Utils.getAvailableFoodItems()
         local availableWater = Utils.getAvailableWaterItems()
-        print("|cff87CEEB[Thic-Portals]|r Detected " .. #availableFood .. " food items and " .. #availableWater ..
+        Utils.print("Detected " .. #availableFood .. " food items and " .. #availableWater ..
                   " water items you can conjure.")
 
         -- Test the detection function directly
         local testResult = Utils.isSpellRankKnown("Conjure Food", 7)
-        print("|cff87CEEB[Thic-Portals]|r Direct test - isSpellRankKnown('Conjure Food', 7) = " .. tostring(testResult))
+        Utils.print("Direct test - isSpellRankKnown('Conjure Food', 7) = " .. tostring(testResult))
     elseif command == "help" then
-        print("|cff87CEEB[Thic-Portals]|r Usage:")
+        Utils.print("Usage:")
         print("/Tp show - Show the addon button")
         print("/Tp on - Enable the addon")
         print("/Tp off - Disable the addon")
@@ -162,9 +162,9 @@ function handleCommand(msg)
         print("/Tp keywords add/remove intent/destination/service [keyword] - Add or remove a keyword")
         print("/Tp cooldown [seconds] - Set the invite cooldown period")
     elseif command == "author" then
-        print("|cff87CEEB[Thic-Portals]|r This addon was created by [Thic-Ashbringer EU].")
+        Utils.print("This addon was created by [Thic-Ashbringer EU].")
     else
-        print("|cff87CEEB[Thic-Portals]|r Invalid command. Type /Tp help for usage instructions.")
+        Utils.print("Invalid command. Type /Tp help for usage instructions.")
     end
 end
 

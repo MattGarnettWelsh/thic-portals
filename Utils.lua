@@ -123,11 +123,11 @@ end
 
 -- Function to print gold information
 function Utils.printGoldInformation()
-    print(string.format("|cff87CEEB[Thic-Portals]|r Total trades completed: %d", Config.Settings.totalTradesCompleted))
-    print(string.format("|cff87CEEB[Thic-Portals]|r Total gold earned: %dg %ds %dc",
+    Utils.print(string.format("Total trades completed: %d", Config.Settings.totalTradesCompleted))
+    Utils.print(string.format("Total gold earned: %dg %ds %dc",
         math.floor(Config.Settings.totalGold / 10000), math.floor((Config.Settings.totalGold % 10000) / 100),
         Config.Settings.totalGold % 100))
-    print(string.format("|cff87CEEB[Thic-Portals]|r Gold earned today: %dg %ds %dc",
+    Utils.print(string.format("Gold earned today: %dg %ds %dc",
         math.floor(Config.Settings.dailyGold / 10000), math.floor((Config.Settings.dailyGold % 10000) / 100),
         Config.Settings.dailyGold % 100))
 end
@@ -138,7 +138,7 @@ function Utils.resetDailyGoldIfNeeded()
     if Config.Settings.lastUpdateDate ~= currentDate then
         Config.Settings.dailyGold = 0
         Config.Settings.lastUpdateDate = currentDate
-        print("|cff87CEEB[Thic-Portals]|r Daily gold counter reset for a new day.")
+        Utils.print("Daily gold counter reset for a new day.")
     end
 end
 
@@ -223,9 +223,7 @@ function Utils.getMatchingPortal(destination)
     end
 
     if bestMatch then
-        if Config.Settings.debugMode then
-            print("Best match for destination: " .. bestMatch)
-        end
+        Utils.debugPrint("Best match for destination: " .. bestMatch)
 
         local spellID = nil
 
@@ -385,6 +383,16 @@ function Utils.getHighestTierWaterInInventory()
         end
     end
     return nil, 0
+end
+
+function Utils.print(message)
+    print("|cff87CEEB[Thic-Portals]|r " .. message)
+end
+
+function Utils.debugPrint(message)
+    if Config.Settings.debugMode then
+        Utils.print(message)
+    end
 end
 
 _G.Utils = Utils

@@ -166,7 +166,7 @@ local function addPriceEditBoxes(group, category, prices)
             if prices and prices[item.name] then
                 prices[item.name] = value
             end
-            print("|cff87CEEB[Thic-Portals]|r " .. item.name .. " price updated to " .. value .. ".")
+            Utils.print("" .. item.name .. " price updated to " .. value .. ".")
         end)
         group:AddChild(priceEditBox)
     end
@@ -226,11 +226,11 @@ function UI.toggleAddonEnabledState()
     if Config.Settings.addonEnabled then
         toggleButtonOverlayTexture:SetTexture("Interface\\AddOns\\ThicPortals\\Media\\Logo\\thicportalsopen.tga") -- Replace with the path to your image
         UI.addonEnabledCheckbox:SetValue(true)
-        print("|cff87CEEB[Thic-Portals]|r The portal shop is open!")
+        Utils.print("The portal shop is open!")
     else
         toggleButtonOverlayTexture:SetTexture("Interface\\AddOns\\ThicPortals\\Media\\Logo\\thicportalsclosed.tga") -- Replace with the path to your image
         UI.addonEnabledCheckbox:SetValue(false)
-        print("|cff87CEEB[Thic-Portals]|r You closed the shop.")
+        Utils.print("You closed the shop.")
 
         -- Clear any tracked players and their data
         Events.pendingInvites = {}
@@ -270,9 +270,7 @@ function UI.createToggleButton()
             UI.toggleAddonEnabledState() -- Update the button text
         elseif button == "RightButton" then
             -- If debug mode log the current options panel state
-            if Config.Settings.debugMode then
-                print("Options Panel Hidden: " .. tostring(Config.Settings.optionsPanelHidden))
-            end
+            Utils.debugPrint("Options Panel Hidden: " .. tostring(Config.Settings.optionsPanelHidden))
 
             if Config.Settings.optionsPanelHidden then
                 UI.showOptionsPanel()
@@ -290,11 +288,9 @@ function UI.createToggleButton()
         local point, relativeTo, relativePoint, xOfs, yOfs = self:GetPoint()
 
         -- If debug mode is enabled, print the position
-        if Config.Settings.debugMode then
-            print("Icon moved to Point: " .. point)
-            print("Icon moved to X: " .. xOfs)
-            print("Icon moved to Y: " .. yOfs)
-        end
+        Utils.debugPrint("Icon moved to Point: " .. point)
+        Utils.debugPrint("Icon moved to X: " .. xOfs)
+        Utils.debugPrint("Icon moved to Y: " .. yOfs)
 
         -- Save the position in the config
         Config.Settings.toggleButtonPosition = {
@@ -356,8 +352,8 @@ function UI.setIconSpell(inviteData, destination)
     inviteData.actionButton:SetAttribute("type", "spell")
     inviteData.actionButton:SetAttribute("spell", inviteData.portal.spellName)
 
-    if Config.Settings.debugMode and inviteData.portal.matched then
-        print("Setting icon spell for " .. destination)
+    if inviteData.portal.matched then
+        Utils.debugPrint("Setting icon spell for " .. destination)
     end
 
     -- Set the icon texture for the portal spell
@@ -366,9 +362,7 @@ end
 
 function UI.setTradeIcon(inviteData)
     -- If debug, log the action
-    if Config.Settings.debugMode then
-        print("Setting trade icon for " .. inviteData.name)
-    end
+    Utils.debugPrint("Setting trade icon for " .. inviteData.name)
 
     if not inviteData.actionButton.icon then
         -- Create the icon texture if it doesn't exist
@@ -426,8 +420,8 @@ function UI.updateTicketList()
 
     UI.totalTickets = #UI.ticketList
 
-    if Config.Settings and Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals] Total ticket count updated: " .. tostring(UI.totalTickets))
+    if Config.Settings then
+        Utils.debugPrint("Total ticket count updated: " .. tostring(UI.totalTickets))
     end
 end
 
@@ -485,9 +479,9 @@ function UI.updateTicketFrame()
 
     -- Print the current alive portals
     if Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals] Current alive portals:")
+        Utils.debugPrint("Current alive portals:")
         for spellName, cast in pairs(Config.CurrentAlivePortals or {}) do
-            print("LIVE PORTAL: " .. spellName .. ": " .. tostring(cast))
+            Utils.debugPrint("LIVE PORTAL: " .. spellName .. ": " .. tostring(cast))
         end
     end
 
@@ -514,9 +508,7 @@ function UI.updateTicketFrame()
     removeButton:SetScript("OnClick", function()
         UninviteUnit(sender)
 
-        if Config.Settings.debugMode then
-            print("|cff87CEEB[Thic-Portals]|r " .. sender .. " has been removed from the party.")
-        end
+        Utils.debugPrint("" .. sender .. " has been removed from the party.")
 
         Events.pendingInvites[sender] = nil
 
@@ -804,9 +796,7 @@ function UI.showPaginatedTicketWindow()
 
         local function toggleMessageView()
             if not ticketFrame.viewingMessage then
-                if Config.Settings.debugMode then
-                    print("Toggling to message view")
-                end
+                Utils.debugPrint("Toggling to message view")
                 ticketFrame.viewingMessage = true
                 iconButton:SetNormalTexture("Interface\\Icons\\achievement_bg_returnxflags_def_wsg")
 
@@ -853,9 +843,7 @@ function UI.showPaginatedTicketWindow()
                     UI.ticketFrame.tickIcon:Hide()
                 end
             else
-                if Config.Settings.debugMode then
-                    print("Toggling back to original view")
-                end
+                Utils.debugPrint("Toggling back to original view")
                 ticketFrame.viewingMessage = false
                 iconButton:SetNormalTexture("Interface\\Icons\\INV_Letter_15")
 
@@ -955,12 +943,12 @@ local function createKeywordSection(scroll, titleText, keywordTable, keywordTabl
             if not Utils.keywordInTable(keyword, keywordTable) then
                 table.insert(keywordTable, keyword)
                 updateKeywordsText()
-                print("|cff87CEEB[Thic-Portals]|r " .. keyword .. " has been added.")
+                Utils.print("" .. keyword .. " has been added.")
             else -- If it already exists
-                print("|cff87CEEB[Thic-Portals]|r " .. keyword .. " is already in the list.")
+                Utils.print("" .. keyword .. " is already in the list.")
             end
         else
-            print("|cff87CEEB[Thic-Portals]|r Cannot add an empty or invalid keyword.")
+            Utils.print("Cannot add an empty or invalid keyword.")
         end
     end
 
@@ -971,12 +959,12 @@ local function createKeywordSection(scroll, titleText, keywordTable, keywordTabl
                 if k == keyword then
                     table.remove(keywordTable, i)
                     updateKeywordsText()
-                    print("|cff87CEEB[Thic-Portals]|r " .. keyword .. " has been removed.")
+                    Utils.print("" .. keyword .. " has been removed.")
                     break
                 end
             end
         else
-            print("|cff87CEEB[Thic-Portals]|r Cannot remove an empty or invalid keyword.")
+            Utils.print("Cannot remove an empty or invalid keyword.")
         end
     end
 
@@ -1126,9 +1114,9 @@ function UI.createOptionsPanel()
         Config.Settings.disableGlobalChannels, function(_, _, value)
             Config.Settings.disableGlobalChannels = value
             if Config.Settings.disableGlobalChannels then
-                print("|cff87CEEB[Thic-Portals]|r Global channels disabled.")
+                Utils.print("Global channels disabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Global channels enabled.")
+                Utils.print("Global channels enabled.")
             end
         end, "Enables or disables the addon from listening to global channels for requests.")
 
@@ -1137,9 +1125,9 @@ function UI.createOptionsPanel()
         function(_, _, value)
             Config.Settings.ApproachMode = value
             if Config.Settings.ApproachMode then
-                print("|cff87CEEB[Thic-Portals]|r Approach mode enabled.")
+                Utils.print("Approach mode enabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Approach mode disabled.")
+                Utils.print("Approach mode disabled.")
             end
         end, "When enabled, the addon will require only a destination value to be provided in either a say/whisper.")
 
@@ -1148,9 +1136,9 @@ function UI.createOptionsPanel()
         Config.Settings.enableFoodWaterSupport, function(_, _, value)
             Config.Settings.enableFoodWaterSupport = value
             if Config.Settings.enableFoodWaterSupport then
-                print("|cff87CEEB[Thic-Portals]|r Food and Water support enabled.")
+                Utils.print("Food and Water support enabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Food and Water support disabled.")
+                Utils.print("Food and Water support disabled.")
             end
         end,
         "Enables or disables the ability to sell food and water items through the portal service. Food and water will be advertised to relevant customers depending on stock levels.")
@@ -1160,9 +1148,9 @@ function UI.createOptionsPanel()
         Config.Settings.disableSmartMatching, function(_, _, value)
             Config.Settings.disableSmartMatching = value
             if Config.Settings.disableSmartMatching then
-                print("|cff87CEEB[Thic-Portals]|r Smart matching disabled.")
+                Utils.print("Smart matching disabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Smart matching enabled.")
+                Utils.print("Smart matching enabled.")
             end
         end,
         "Disables advanced smart matching algorithms and only uses the predefined common phrases to match requests (configurable below).")
@@ -1172,9 +1160,9 @@ function UI.createOptionsPanel()
         function(_, _, value)
             Config.Settings.requireDestination = value
             if Config.Settings.requireDestination then
-                print("|cff87CEEB[Thic-Portals]|r Require destination enabled.")
+                Utils.print("Require destination enabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Require destination disabled.")
+                Utils.print("Require destination disabled.")
             end
         end,
         "When enabled, the addon will require a valid destination (one listed in Destination Keywords) in the message before sending out the invite.")
@@ -1184,9 +1172,9 @@ function UI.createOptionsPanel()
         Config.Settings.removeRealmFromInviteCommand, function(_, _, value)
             Config.Settings.removeRealmFromInviteCommand = value
             if Config.Settings.removeRealmFromInviteCommand then
-                print("|cff87CEEB[Thic-Portals]|r Smart matching disabled.")
+                Utils.print("Smart matching disabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Smart matching enabled.")
+                Utils.print("Smart matching enabled.")
             end
         end,
         "When enabled, removes the realm name e.g. '-Ashbringer' from invite commands, making invites suitable for certain single realm servers.")
@@ -1196,9 +1184,9 @@ function UI.createOptionsPanel()
         Config.Settings.disableAFKProtection, function(_, _, value)
             Config.Settings.disableAFKProtection = value
             if Config.Settings.disableAFKProtection then
-                print("|cff87CEEB[Thic-Portals]|r AFK protection disabled.")
+                Utils.print("AFK protection disabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r AFK protection enabled.")
+                Utils.print("AFK protection enabled.")
             end
         end,
         "Disables the AFK protection feature which is in place to prevent potentially over-inviting players if the user forgets the addon is running. Two players in a row leaving the party without payment triggers shop close.")
@@ -1207,10 +1195,10 @@ function UI.createOptionsPanel()
     addCheckbox(checkboxGroup, "Hide Icon", UI.hideIconCheckbox, Config.Settings.hideIcon, function(_, _, value)
         Config.Settings.hideIcon = value
         if Config.Settings.hideIcon then
-            print("|cff87CEEB[Thic-Portals]|r Open/Closed icon marked visible.")
+            Utils.print("Open/Closed icon marked visible.")
             toggleButton:Hide()
         else
-            print("|cff87CEEB[Thic-Portals]|r Open/Closed icon marked hidden.")
+            Utils.print("Open/Closed icon marked hidden.")
             toggleButton:Show()
         end
     end, "Hides or shows the toggle button on the screen. You can use '/Tp show' to reveal the hidden icon again.")
@@ -1220,9 +1208,9 @@ function UI.createOptionsPanel()
         function(_, _, value)
             Config.Settings.soundEnabled = value
             if Config.Settings.soundEnabled then
-                print("|cff87CEEB[Thic-Portals]|r Sound enabled.")
+                Utils.print("Sound enabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Sound disabled.")
+                Utils.print("Sound disabled.")
             end
         end, "Enables or disables sound notifications.")
 
@@ -1231,9 +1219,9 @@ function UI.createOptionsPanel()
         function(_, _, value)
             Config.Settings.debugMode = value
             if Config.Settings.debugMode then
-                print("|cff87CEEB[Thic-Portals]|r Debug mode enabled.")
+                Utils.print("Debug mode enabled.")
             else
-                print("|cff87CEEB[Thic-Portals]|r Debug mode disabled.")
+                Utils.print("Debug mode disabled.")
             end
         end, "Toggles debug mode for additional console logging.")
 
@@ -1258,10 +1246,10 @@ function UI.createOptionsPanel()
         local value = tonumber(text)
         if value and value >= 1 and value <= 15 then
             Config.Settings.maxSimultaneousTickets = math.floor(value)
-            print("|cff87CEEB[Thic-Portals]|r Max simultaneous tickets set to: " ..
+            Utils.print("Max simultaneous tickets set to: " ..
                       Config.Settings.maxSimultaneousTickets)
         else
-            print("|cff87CEEB[Thic-Portals]|r Invalid value. Please enter a number between 1 and 15.")
+            Utils.print("Invalid value. Please enter a number between 1 and 15.")
             widget:SetText(tostring(Config.Settings.maxSimultaneousTickets))
         end
     end)
@@ -1347,7 +1335,7 @@ function UI.createOptionsPanel()
     local inviteMessageGroup = addMessageMultiLineEditBox("Invite Message:", Config.Settings.inviteMessage,
         function(text)
             Config.Settings.inviteMessage = text
-            print("|cff87CEEB[Thic-Portals]|r Invite message updated.")
+            Utils.print("Invite message updated.")
         end)
     messageConfigGroup:AddChild(inviteMessageGroup)
     messageConfigGroup:AddChild(smallVerticalGap)
@@ -1356,7 +1344,7 @@ function UI.createOptionsPanel()
     local inviteMessageWithoutDestinationGroup = addMessageMultiLineEditBox("Invite Message (No Destination):",
         Config.Settings.inviteMessageWithoutDestination, function(text)
             Config.Settings.inviteMessageWithoutDestination = text
-            print("|cff87CEEB[Thic-Portals]|r Invite message without destination updated.")
+            Utils.print("Invite message without destination updated.")
         end)
     messageConfigGroup:AddChild(inviteMessageWithoutDestinationGroup)
     messageConfigGroup:AddChild(smallVerticalGap)
@@ -1364,7 +1352,7 @@ function UI.createOptionsPanel()
     -- Tip Message
     local tipMessageGroup = addMessageMultiLineEditBox("Tip Message:", Config.Settings.tipMessage, function(text)
         Config.Settings.tipMessage = text
-        print("|cff87CEEB[Thic-Portals]|r Tip message updated.")
+        Utils.print("Tip message updated.")
     end)
     messageConfigGroup:AddChild(tipMessageGroup)
     messageConfigGroup:AddChild(smallVerticalGap)
@@ -1372,7 +1360,7 @@ function UI.createOptionsPanel()
     -- No Tip Message
     local noTipMessageGroup = addMessageMultiLineEditBox("No Tip Message:", Config.Settings.noTipMessage, function(text)
         Config.Settings.noTipMessage = text
-        print("|cff87CEEB[Thic-Portals]|r No tip message updated.")
+        Utils.print("No tip message updated.")
     end)
     messageConfigGroup:AddChild(noTipMessageGroup)
     messageConfigGroup:AddChild(largeVerticalGap)
@@ -1407,9 +1395,7 @@ end
 -- Show the options panel
 function UI.showOptionsPanel()
     -- If debug mode is enabled, print a message
-    if Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r Showing options panel.")
-    end
+    Utils.debugPrint("Showing options panel.")
 
     if not optionsPanel then
         UI.createOptionsPanel()
@@ -1425,9 +1411,7 @@ end
 -- Hide the options panel
 function UI.hideOptionsPanel()
     -- If debug mode is enabled, print a message
-    if Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r Hiding options panel.")
-    end
+    Utils.debugPrint("Hiding options panel.")
 
     if optionsPanel then
         optionsPanel:Hide()
@@ -1501,7 +1485,7 @@ function UI.createInterfaceOptionsPanel()
     showIconButton:SetText("Show Icon Button")
     showIconButton:SetScript("OnClick", function()
         UI.showToggleButton()
-        print("|cff87CEEB[Thic-Portals]|r Addon management icon displayed.")
+        Utils.print("Addon management icon displayed.")
     end)
 
     -- Reset Icon Position Button
@@ -1511,7 +1495,7 @@ function UI.createInterfaceOptionsPanel()
     resetIconButton:SetText("Reset Icon Position")
     resetIconButton:SetScript("OnClick", function()
         UI.resetToggleButtonPosition()
-        print("|cff87CEEB[Thic-Portals]|r Addon management icon position reset.")
+        Utils.print("Addon management icon position reset.")
     end)
 
     -- Add descriptions for the buttons
