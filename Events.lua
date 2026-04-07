@@ -23,8 +23,8 @@ Events.uiInitialized = false -- Flag to track if UI has been created
 -- }
 
 local function printEvent(event)
-    if Config.Settings and Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r " .. event .. " event fired.")
+    if Config.Settings then
+        Utils.debugPrint(event .. " event fired.")
     end
 end
 
@@ -37,14 +37,14 @@ function Events.initializeUI()
     -- Final verification that spellbook is readable
     local testSpell = GetSpellBookItemName(1, BOOKTYPE_SPELL)
     if not testSpell then
-        print("|cff87CEEB[Thic-Portals]|r ERROR: Cannot initialize - spellbook not accessible!")
+        Utils.print("ERROR: Cannot initialize - spellbook not accessible!")
         return
     end
 
     -- Mark as initialized
     Events.uiInitialized = true
 
-    print("|cff87CEEB[Thic-Portals]|r Initializing UI with spellbook loaded...")
+    Utils.print("Initializing UI with spellbook loaded...")
 
     -- Print gold info to the console
     Utils.printGoldInformation()
@@ -59,18 +59,17 @@ function Events.initializeUI()
     -- Create the global interface options panel
     UI.createInterfaceOptionsPanel()
 
-    print("|cff87CEEB[Thic-Portals]|r UI initialization complete!")
+    Utils.print("UI initialization complete!")
 end
 
 -- Function to handle consecutive leaves without payment
 local function handleConsecutiveLeavesWithoutPayment()
     Config.Settings.consecutiveLeavesWithoutPayment = Config.Settings.consecutiveLeavesWithoutPayment + 1
-    print("|cff87CEEB[Thic-Portals]|r Consecutive players who have left the party without payment: " ..
+    Utils.print("Consecutive players who have left the party without payment: " ..
               Config.Settings.consecutiveLeavesWithoutPayment)
 
     if Config.Settings.consecutiveLeavesWithoutPayment >= Config.Settings.leaveWithoutPaymentThreshold then
-        print(
-            "|cff87CEEB[Thic-Portals]|r Two people in a row left without payment - you are likely AFK. Shutting down the addon.")
+        Utils.print("Two people in a row left without payment - you are likely AFK. Shutting down the addon.")
         if Config.Settings.addonEnabled then
             UI.toggleAddonEnabledState()
         end
@@ -107,7 +106,7 @@ function Events.onEvent(self, event, ...)
                 local testSpell = GetSpellBookItemName(1, BOOKTYPE_SPELL)
                 if not testSpell then
                     -- Spellbook still not ready, try again with longer delay
-                    print("|cff87CEEB[Thic-Portals]|r Spellbook not ready yet, waiting...")
+                    Utils.print("Spellbook not ready yet, waiting...")
                     C_Timer.After(3, function()
                         Events.initializeUI()
                     end)
@@ -132,9 +131,7 @@ function Events.onEvent(self, event, ...)
         if not Config.Settings.disableGlobalChannels then
             checkGlobal = true
         else
-            if Config.Settings.debugMode then
-                print("|cff87CEEB[Thic-Portals]|r Global channels disabled. Skipping global channel message.")
-            end
+            Utils.debugPrint("Global channels disabled. Skipping global channel message.")
         end
     end
 
@@ -153,9 +150,7 @@ function Events.onEvent(self, event, ...)
             if message and name then
                 -- If name is not "Thicfury" or "Thic", return
                 -- if not (name == "Thicfury" or name == "Thic") then
-                --     if Config.Settings.debugMode then
-                --         print("|cff87CEEB[Thic-Portals]|r Ignoring message from: " .. name)
-                --     end
+                --     Utils.debugPrint("Ignoring message from: " .. name)
                 --     return
                 -- end
 
@@ -208,10 +203,7 @@ function Events.onEvent(self, event, ...)
                 inviteData.ticketFrame:Hide()
             end
             Events.pendingInvites[sender] = nil
-            if Config.Settings.debugMode then
-                print("|cff87CEEB[Thic-Portals]|r " .. sender ..
-                          " has left the party and has been removed from tracking.")
-            end
+            Utils.debugPrint(sender .. " has left the party and has been removed from tracking.")
             if not (inviteData and inviteData.hasPaid) and not Config.Settings.disableAFKProtection then
                 handleConsecutiveLeavesWithoutPayment()
             end
@@ -261,9 +253,7 @@ function Events.onEvent(self, event, ...)
             local spellName = GetSpellInfo(spellID)
             for _, portalName in ipairs(Config.Portals) do
                 if spellName:lower() == portalName:lower() then
-                    if Config.Settings.debugMode then
-                        print("|cff87CEEB[Thic-Portals]|r Portal to " .. spellName .. " successfully cast!")
-                    end
+                    Utils.debugPrint("Portal to " .. spellName .. " successfully cast!")
 
                     Config.CurrentAlivePortals[spellName] = true
 
@@ -278,10 +268,8 @@ function Events.onEvent(self, event, ...)
                     C_Timer.After(60, function()
                         Config.CurrentAlivePortals[spellName] = nil
 
-                        if Config.Settings.debugMode then
-                            print("|cff87CEEB[Thic-Portals]|r Portal to " .. spellName ..
-                                      " has been removed from the list of active portals.")
-                        end
+                        Utils.debugPrint("Portal to " .. spellName ..
+                                    " has been removed from the list of active portals.")
                     end)
 
                     break
@@ -311,9 +299,7 @@ function Events.onEvent(self, event, ...)
                 for sender, inviteData in pairs(Events.pendingInvites) do
                     if inviteData.name == targetName then
                         inviteData.targetted = true
-                        if Config.Settings.debugMode then
-                            print("|cff87CEEB[Thic-Portals]|r Target set to: " .. targetName)
-                        end
+                        Utils.debugPrint("Target set to: " .. targetName)
 
                         break
                     end
@@ -330,25 +316,19 @@ end
 -- Function to reset the consecutive leaves without payment counter
 function Events.resetConsecutiveLeavesWithoutPaymentCounter()
     Config.Settings.consecutiveLeavesWithoutPayment = 0
-    if Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r Trade initiated. Resetting consecutive leaves without payment counter.")
-    end
+    Utils.debugPrint("Trade initiated. Resetting consecutive leaves without payment counter.")
 end
 
 -- Function to store the current trader's information
 function Events.storeCurrentTrader()
     Config.currentTraderName, Config.currentTraderRealm = UnitName("NPC", true)
-    if Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r Current trader: " .. (Config.currentTraderName or "Unknown"))
-    end
+    Utils.debugPrint("Current trader: " .. (Config.currentTraderName or "Unknown"))
 end
 
 -- Function to update trade money
 function Events.updateTradeMoney()
     Config.currentTraderMoney = GetTargetTradeMoney()
-    if Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r Current trade money: " .. (Config.currentTraderMoney or "Unknown"))
-    end
+    Utils.debugPrint("Current trade money: " .. (Config.currentTraderMoney or "Unknown"))
 end
 
 -- Function to handle trade completion
@@ -371,12 +351,10 @@ function Events.handleTradeComplete()
             Config.currentTraderMoney = nil
             Config.currentTraderRealm = nil
         else
-            if Config.Settings.debugMode then
-                print("|cff87CEEB[Thic-Portals]|r No pending invite found for current trader, ignoring transaction.")
-            end
+            Utils.debugPrint("No pending invite found for current trader, ignoring transaction.")
         end
-    elseif Config.Settings.debugMode then
-        print("|cff87CEEB[Thic-Portals]|r No current trader found.")
+    else
+        Utils.debugPrint("No current trader found.")
     end
 end
 
