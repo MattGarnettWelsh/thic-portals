@@ -926,14 +926,13 @@ local function createKeywordSection(scroll, titleText, keywordTable, keywordTabl
     local function updateKeywordsText()
         userListContent:ReleaseChildren() -- Clear existing content
 
-        local labels = {}
-        for i, keyword in ipairs(keywordTable) do
-            labels[i] = AceGUI:Create("InteractiveLabel")
-            labels[i]:SetText(keyword)
-            labels[i]:SetCallback("OnEnter", function(label) label:SetColor(1, 0.75, 0) end) -- Highlight on hover
-            labels[i]:SetCallback("OnLeave", function(label) label:SetColor(1, 1, 1) end) -- Reset color when not hovering
-            labels[i]:SetCallback("OnClick", function() editBox:SetText(keyword) end)
-            userListContent:AddChild(labels[i])
+        for _, keyword in ipairs(keywordTable) do
+            local label = AceGUI:Create("InteractiveLabel")
+            label:SetText(keyword)
+            label:SetCallback("OnEnter", function(label) label:SetColor(1, 0.75, 0) end) -- Highlight on hover
+            label:SetCallback("OnLeave", function(label) label:SetColor(1, 1, 1) end) -- Reset color when not hovering
+            label:SetCallback("OnClick", function() editBox:SetText(keyword) end)
+            userListContent:AddChild(label)
         end
 
         -- Ensure the layout is updated when content changes
