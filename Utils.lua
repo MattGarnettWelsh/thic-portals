@@ -62,6 +62,132 @@ function Utils.findKeywordPosition(message, keywordList)
     return nil, nil
 end
 
+-- Find every distinct keyword in message order. Longer overlapping phrases win,
+-- so "thunder bluff" is not also reported as "thunder".
+function Utils.findAllKeywordPositions(message, keywordList)
+    if not message or not keywordList then
+        return {}
+    end
+
+    local padded = " " .. message:lower() .. " "
+    local hits = {}
+
+    for _, keyword in ipairs(keywordList) do
+        local pattern = "%f[%w]" .. escapePattern(keyword:lower()) .. "%f[%W]"
+        local searchFrom = 1
+
+        while true do
+            local startPos, endPos = string.find(padded, pattern, searchFrom)
+            if not startPos then
+                break
+            end
+
+            table.insert(hits, {
+                position = startPos,
+                finish = endPos,
+                keyword = keyword
+            })
+            searchFrom = startPos + 1
+        end
+    end
+
+    table.sort(hits, function(a, b)
+        if a.position ~= b.position then
+            return a.position < b.position
+        end
+        return a.finish > b.finish
+    end)
+
+    local results = {}
+    local seen = {}
+    local consumedUpTo = 0
+
+    for _, hit in ipairs(hits) do
+        if hit.position > consumedUpTo then
+            -- Consume the full match even when this keyword was already reported.
+            -- Otherwise a repeated "thunder bluff" can leak its shorter
+            -- overlapping "thunder" alias into the results.
+            consumedUpTo = hit.finish
+
+            local normalizedKeyword = hit.keyword:lower()
+            if not seen[normalizedKeyword] then
+                seen[normalizedKeyword] = true
+                table.insert(results, {
+                    position = hit.position,
+                    keyword = hit.keyword
+                })
+            end
+        end
+    end
+
+    return results
+end
+
+local DESTINATION_MARKERS = {
+    ["to"] = true,
+    ["2"] = true,
+    ["too"] = true
+}
+
+local ORIGIN_MARKERS = {
+    ["from"] = true,
+    ["in"] = true,
+    ["at"] = true,
+    ["im"] = true,
+    ["i'm"] = true
+}
+
+local function classifyPrecedingText(text)
+    if not text then
+        return 0
+    end
+
+    -- Arrows are often written without spaces, as in "sw->if".
+    if text:match("%-%>%s*$") or text:match("=%>%s*$") or text:match(">>%s*$") or
+        text:match(">%s*$") then
+        return 1
+    end
+
+    local word = text:match("([%w']+)[%p%s]*$")
+    if DESTINATION_MARKERS[word] then
+        return 1
+    elseif ORIGIN_MARKERS[word] then
+        return -1
+    end
+
+    return 0
+end
+
+-- Choose the city the customer wants to reach rather than whichever city is
+-- listed first in the settings. The third return value identifies messages
+-- that only state an origin, so a follow-up like "I'm in SW" cannot retarget
+-- an existing ticket.
+function Utils.findRequestedDestination(message, keywordList)
+    if not message or not keywordList then
+        return nil, nil, false
+    end
+
+    local candidates = Utils.findAllKeywordPositions(message, keywordList)
+    if #candidates == 0 then
+        return nil, nil, false
+    end
+
+    local padded = " " .. message:lower() .. " "
+    local best = nil
+    local bestScore = -2
+
+    for _, candidate in ipairs(candidates) do
+        local score = classifyPrecedingText(padded:sub(1, candidate.position - 1))
+
+        if score > bestScore or (score == bestScore and score > 0) then
+            bestScore = score
+            best = candidate
+        end
+    end
+
+    return best.position, best.keyword, bestScore < 0
+end
+
 -- Function to replace placeholders in messages with actual values
 function Utils.replacePlaceholders(message, destination)
     if not message then
