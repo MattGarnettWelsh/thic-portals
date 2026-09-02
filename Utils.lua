@@ -170,48 +170,91 @@ function Utils.isPlayerBanned(player)
     return false
 end
 
-function Utils.getMatchingPortal(destination)
-    local portal = {
-        matched = false,
-        spellID = 10059,
-        spellName = "Portal: Stormwind",
-        locationName = "Stormwind"
-    }
+-- Every shipped destination keyword mapped to the city it names. The previous
+-- letter-frequency heuristic sent common aliases such as "org" to Ironforge.
+Utils.DestinationAliases = {
+    darn = "Darnassus",
+    darnassuss = "Darnassus",
+    darnas = "Darnassus",
+    darrna = "Darnassus",
+    darnaas = "Darnassus",
+    darnassus = "Darnassus",
+    darnasuss = "Darnassus",
+    darna = "Darnassus",
+    darnasus = "Darnassus",
+    sw = "Stormwind",
+    stormwind = "Stormwind",
+    ["storm wind"] = "Stormwind",
+    ["if"] = "Ironforge",
+    ironforge = "Ironforge",
+    ["iron forge"] = "Ironforge",
+    exodar = "Exodar",
+    exo = "Exodar",
+    theramore = "Theramore",
+    thera = "Theramore",
+    tmore = "Theramore",
+    org = "Orgrimmar",
+    orgrimmar = "Orgrimmar",
+    orgri = "Orgrimmar",
+    orgim = "Orgrimmar",
+    tb = "Thunder Bluff",
+    ["thunder bluff"] = "Thunder Bluff",
+    thunderbluff = "Thunder Bluff",
+    thunder = "Thunder Bluff",
+    uc = "Undercity",
+    undercity = "Undercity",
+    ["under city"] = "Undercity",
+    silvermoon = "Silvermoon",
+    ["silver moon"] = "Silvermoon",
+    sm = "Silvermoon",
+    silv = "Silvermoon",
+    stonard = "Stonard",
+    ston = "Stonard",
+    shattrath = "Shattrath",
+    shatt = "Shattrath",
+    shat = "Shattrath",
+    shath = "Shattrath"
+}
 
+Utils.PortalSpells = {
+    Darnassus = {spellID = 11419},
+    Stormwind = {spellID = 10059},
+    Ironforge = {spellID = 11416},
+    Exodar = {spellID = 32266},
+    Theramore = {spellID = 49360},
+    Orgrimmar = {spellID = 11417},
+    ["Thunder Bluff"] = {spellID = 11420},
+    Undercity = {spellID = 11418},
+    Silvermoon = {spellID = 32267},
+    Stonard = {spellID = 49361},
+    Shattrath = {
+        byFaction = {
+            Alliance = 33691,
+            Horde = 35717
+        }
+    }
+}
+
+function Utils.resolveCanonicalDestination(destination)
     if not destination then
-        return portal
+        return nil
     end
 
-    -- Use the destination value to initially find the absolute spell match (Portal: Stormwind or Portal: Ironforge or ...)
-    -- If no match is found, return nil
+    return Utils.DestinationAliases[destination:lower()]
+end
 
-    -- Destination could be "if, "ironforge", "sw", "stormwind", "darn", "darna", "darnas", "darnasuss", ... - we need to take account for typos, abbreviations, etc.
-    -- The best bet is to check every letter of the destination word and check if it matches in the destination part of the Portal: MATCH spell name
-    -- The official spell destination name with the most matches is the correct one
-    -- If there are multiple matching names, we can use the one with the most matches
-
-    -- Example: destination = "darn" produces "Portal: Darnassus" as the best match
-
-    -- Config.Portals = {
-    --     "Portal: Darnassus",
-    --     "Portal: Stormwind",
-    --     "Portal: Ironforge",
-    --     "Portal: Orgrimmar",
-    --     "Portal: Thunder Bluff",
-    --     "Portal: Undercity",
-    -- }
-
-    local destinationLength = string.len(destination)
+-- Preserve support for custom destination keywords by retaining the old
+-- heuristic as a fallback for aliases not present in the shipped map.
+local function matchPortalByHeuristic(destination)
     local bestMatch = nil
     local maxMatches = 0
-    for _, portalName in ipairs(Config.Portals) do
-        local spellName = portalName:match("Portal: (.+)")
-        local spellDestination = spellName:lower()
 
+    for _, portalName in ipairs(Config.Portals) do
+        local spellDestination = portalName:match("Portal: (.+)"):lower()
         local matches = 0
-        for i = 1, destinationLength do
-            local letter = destination:sub(i, i)
-            if spellDestination:find(letter) then
+
+        for i = 1, #destination do
+            if spellDestination:find(destination:sub(i, i), 1, true) then
                 matches = matches + 1
             end
         end
@@ -222,50 +265,42 @@ function Utils.getMatchingPortal(destination)
         end
     end
 
-    if bestMatch then
-        Utils.debugPrint("Best match for destination: " .. bestMatch)
+    return bestMatch and bestMatch:match("Portal: (.+)") or nil
+end
 
-        local spellID = nil
+function Utils.getMatchingPortal(destination)
+    local defaultPortal = {
+        matched = false,
+        spellID = 10059,
+        spellName = "Portal: Stormwind",
+        locationName = "Stormwind"
+    }
 
-        if bestMatch == "Portal: Darnassus" then
-            spellID = 11419
-        elseif bestMatch == "Portal: Stormwind" then
-            spellID = 10059
-        elseif bestMatch == "Portal: Ironforge" then
-            spellID = 11416
-        elseif bestMatch == "Portal: Orgrimmar" then
-            spellID = 11417
-        elseif bestMatch == "Portal: Thunder Bluff" then
-            spellID = 11420
-        elseif bestMatch == "Portal: Undercity" then
-            spellID = 11418
-        elseif bestMatch == "Portal: Exodar" then
-            spellID = 32266
-        elseif bestMatch == "Portal: Theramore" then
-            spellID = 49360
-        elseif bestMatch == "Portal: Silvermoon" then
-            spellID = 32267
-        elseif bestMatch == "Portal: Stonard" then
-            spellID = 49361
-        elseif bestMatch == "Portal: Shattrath" then
-            -- Both Alliance and Horde can portal to Shattrath, but they have different spell IDs, so we need to check the player's faction first
-            local englishFaction, _ = UnitFactionGroup("player")
-            if englishFaction == "Alliance" then
-                spellID = 33691
-            elseif englishFaction == "Horde" then
-                spellID = 35717
-            end
-        end
-
-        portal = {
-            matched = true,
-            spellID = spellID,
-            spellName = bestMatch,
-            locationName = bestMatch:match("Portal: (.+)")
-        }
+    if not destination then
+        return defaultPortal
     end
 
-    return portal
+    local canonical = Utils.resolveCanonicalDestination(destination) or
+                          matchPortalByHeuristic(destination)
+    local spell = canonical and Utils.PortalSpells[canonical]
+
+    if not spell then
+        return defaultPortal
+    end
+
+    local spellID = spell.spellID
+    if not spellID and spell.byFaction then
+        spellID = spell.byFaction[UnitFactionGroup("player")]
+    end
+
+    Utils.debugPrint("Destination \"" .. destination .. "\" resolved to " .. canonical)
+
+    return {
+        matched = true,
+        spellID = spellID,
+        spellName = "Portal: " .. canonical,
+        locationName = canonical
+    }
 end
 
 -- Convert the copper value to a gold, silver, and copper formatted string
