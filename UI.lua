@@ -59,7 +59,9 @@ local function addCheckbox(group, label, checkbox, initialValue, callback, toolt
     if tooltipText then
         checkbox:SetCallback("OnEnter", function()
             GameTooltip:SetOwner(checkbox.frame, "ANCHOR_TOPRIGHT")
-            GameTooltip:SetText(tooltipText, 1, 1, 1, true)
+            -- SetText takes (text, r, g, b, alpha, wrap) - unlike AddLine, whose wrap flag is the
+            -- fifth argument. Passing the wrap boolean as alpha errors on every checkbox hover.
+            GameTooltip:SetText(tooltipText, 1, 1, 1, 1, true)
             GameTooltip:Show()
         end)
 
