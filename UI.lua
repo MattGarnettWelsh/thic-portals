@@ -921,14 +921,19 @@ end
 local function createKeywordSection(scroll, titleText, keywordTable, keywordTableType, description)
     local userListGroup = AceGUI:Create("InlineGroup")
     local userListContent = AceGUI:Create("SimpleGroup")
-    local keywordsText = AceGUI:Create("Label")
+    local editBox = AceGUI:Create("EditBox")
 
     local function updateKeywordsText()
-        local text = ""
+        userListContent:ReleaseChildren() -- Clear existing content
+
         for _, keyword in ipairs(keywordTable) do
-            text = text .. keyword .. "\n"
+            local label = AceGUI:Create("InteractiveLabel")
+            label:SetText(keyword)
+            label:SetCallback("OnEnter", function(label) label:SetColor(1, 0.75, 0) end) -- Highlight on hover
+            label:SetCallback("OnLeave", function(label) label:SetColor(1, 1, 1) end) -- Reset color when not hovering
+            label:SetCallback("OnClick", function() editBox:SetText(keyword) end)
+            userListContent:AddChild(label)
         end
-        keywordsText:SetText(text)
 
         -- Ensure the layout is updated when content changes
         userListContent:DoLayout()
@@ -991,7 +996,6 @@ local function createKeywordSection(scroll, titleText, keywordTable, keywordTabl
     scroll:AddChild(keywordGroup)
 
     -- Add/Remove Keyword MultiLineEditBox
-    local editBox = AceGUI:Create("EditBox")
     editBox:SetLabel("Add/Remove " .. (keywordTableType or "Keyword")) -- Use the passed keywordTableType or default to "Keyword"
     editBox:SetWidth(200)
     editBox:DisableButton(true)
@@ -1041,10 +1045,7 @@ local function createKeywordSection(scroll, titleText, keywordTable, keywordTabl
     userListContent:SetAutoAdjustHeight(true) -- Adjust height automatically
     userListGroup:AddChild(userListContent)
 
-    -- Keywords Text Label
-    keywordsText:SetFullWidth(true)
-    userListContent:AddChild(keywordsText)
-
+    -- Initial population of keywords
     updateKeywordsText()
 end
 
@@ -1364,6 +1365,12 @@ function UI.createOptionsPanel()
     end)
     messageConfigGroup:AddChild(noTipMessageGroup)
     messageConfigGroup:AddChild(largeVerticalGap)
+
+    -- Short delay to ensure the UI is ready before we attempt to populate the keyword sections
+    repeat
+        C_Timer.After(1, function() end)
+        Utils.debugPrint("Waiting for UI to initialize before populating keyword sections...")
+    until Events.uiInitialized
 
     -- Creating Keyword Sections
     createKeywordSection(scroll, "|cFFFFD700Any Keyword Ban List Management|r", Config.Settings.KeywordBanList,
