@@ -2,6 +2,7 @@
 local Config = _G.Config
 
 -- Utils.lua
+local Compat = _G.Compat
 local Utils = {}
 
 -- Function to calculate the distance between two points using the Pythagorean theorem
@@ -212,10 +213,11 @@ function Utils.updateDistanceLabel(sender, distanceLabel)
             return
         end
         if UnitInParty(sender) then
-            local playerX, playerY, playerInstanceID = UnitPosition("player")
-            local targetX, targetY, targetInstanceID = UnitPosition(sender)
+            local playerX, playerY, _, playerInstanceID = UnitPosition("player")
+            local targetX, targetY, _, targetInstanceID = UnitPosition(sender)
 
-            if playerInstanceID == targetInstanceID then
+            -- UnitPosition returns nil inside instances
+            if playerX and targetX and playerInstanceID == targetInstanceID then
                 local distance = Utils.calculateDistance(playerX, playerY, targetX, targetY)
                 distanceLabel:SetText(string.format("Distance: %.1f yards", distance))
             else
@@ -275,10 +277,11 @@ end
 
 -- Function to check if the player is within range using the UnitPosition API
 function Utils.isPlayerWithinRange(sender, range)
-    local playerX, playerY, playerInstanceID = UnitPosition("player")
-    local targetX, targetY, targetInstanceID = UnitPosition(sender)
+    local playerX, playerY, _, playerInstanceID = UnitPosition("player")
+    local targetX, targetY, _, targetInstanceID = UnitPosition(sender)
 
-    if playerInstanceID == targetInstanceID then
+    -- UnitPosition returns nil inside instances
+    if playerX and targetX and playerInstanceID == targetInstanceID then
         local distance = Utils.calculateDistance(playerX, playerY, targetX, targetY)
         return distance <= range -- Example threshold for being "travelled"
     end
@@ -469,7 +472,7 @@ function Utils.isSpellRankKnown(spellBaseName, rank)
     local maxSpells = 1024 -- Safe upper limit
 
     while i <= maxSpells do
-        local spellName, spellSubName = GetSpellBookItemName(i, BOOKTYPE_SPELL)
+        local spellName, spellSubName = Compat.getSpellBookItemName(i)
 
         if not spellName then
             break
@@ -524,7 +527,7 @@ function Utils.getHighestTierFoodInInventory()
     -- Iterate in reverse order (highest tier first)
     for i = #availableFood, 1, -1 do
         local item = availableFood[i]
-        local count = GetItemCount(item.itemId, false)
+        local count = Compat.getItemCount(item.itemId, false)
         if count > 0 then
             return item, count
         end
@@ -538,7 +541,7 @@ function Utils.getHighestTierWaterInInventory()
     -- Iterate in reverse order (highest tier first)
     for i = #availableWater, 1, -1 do
         local item = availableWater[i]
-        local count = GetItemCount(item.itemId, false)
+        local count = Compat.getItemCount(item.itemId, false)
         if count > 0 then
             return item, count
         end

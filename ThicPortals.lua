@@ -6,6 +6,7 @@ InviteTrade = _G.InviteTrade
 UI = _G.UI
 Events = _G.Events
 Utils = _G.Utils
+Compat = _G.Compat
 
 local frame = CreateFrame("Frame")
 
@@ -104,7 +105,7 @@ function handleCommand(msg)
         local foundFood = false
         local foundWater = false
         while i <= 1024 do
-            local spellName, spellRank = GetSpellBookItemName(i, BOOKTYPE_SPELL)
+            local spellName, spellRank = Compat.getSpellBookItemName(i)
             if not spellName then
                 break
             end

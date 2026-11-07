@@ -109,6 +109,13 @@ local DEFAULT_SETTINGS = {
         rank = 8,
         price = 3000
     }, {
+        -- Forever's Conjure Water (Rank 8) creates this item instead of 22018
+        name = "Mountain Spring Water",
+        itemId = 231778,
+        spellName = "Conjure Water",
+        rank = 8,
+        price = 3000
+    }, {
         name = "Conjured Glacier Water",
         itemId = 34063,
         spellName = "Conjure Water",

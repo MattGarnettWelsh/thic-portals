@@ -1,6 +1,7 @@
 -- InviteTrade.lua
 local Config = _G.Config
 local Utils = _G.Utils
+local Compat = _G.Compat
 
 local InviteTrade = {}
 
@@ -293,28 +294,28 @@ function InviteTrade.checkTradeTip()
 
         -- If the gold amount is higher than 8g, send a custom message via whisper saying "<3"
         if gold > 8 then
-            SendChatMessage("<3", "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
+            Compat.sendChatMessage("<3", "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
 
             -- Send an emote "thank" to the player after they have accepted the trade
-            DoEmote("thank", Config.currentTraderName)
+            Compat.performEmote("thank", Config.currentTraderName)
         end
 
         -- If the gold amount is higher than 8g, send a custom message via whisper saying "<3"
         if gold == 69 or silver == 69 or remainingCopper == 69 then
-            SendChatMessage("Nice (⌐□_□)", "WHISPER", nil,
+            Compat.sendChatMessage("Nice (⌐□_□)", "WHISPER", nil,
                 Events.pendingInvites[Config.currentTraderName].fullName)
 
             -- Send an emote "flirt" to the player after they sent a 69 tip
-            DoEmote("flirt", Config.currentTraderName)
+            Compat.performEmote("flirt", Config.currentTraderName)
         end
 
         -- If the gold amount is higher than 8g, send a custom message via whisper saying "<3"
         if gold == 4 and silver == 20 then
-            SendChatMessage("420 blaze it (⌐□_□)-~", "WHISPER", nil,
+            Compat.sendChatMessage("420 blaze it (⌐□_□)-~", "WHISPER", nil,
                 Events.pendingInvites[Config.currentTraderName].fullName)
 
             -- Send an emote "silly" to the player after they sent a 420 tip
-            DoEmote("silly", Config.currentTraderName)
+            Compat.performEmote("silly", Config.currentTraderName)
         end
 
         return true
@@ -365,15 +366,15 @@ function InviteTrade.sendFoodAndWaterStockMessage(playerName, playerClass)
 
     if targetIsManaUser then
         if waterStock and foodStock then
-            SendChatMessage(
+            Compat.sendChatMessage(
                 "I have " .. waterStock .. " and " .. foodStock .. " in stock if you require it - just ask!", "WHISPER",
                 nil, playerName)
         elseif waterStock or foodStock then
             local stock = waterStock or foodStock
-            SendChatMessage("I have " .. stock .. " in stock if you require it - just ask!", "WHISPER", nil, playerName)
+            Compat.sendChatMessage("I have " .. stock .. " in stock if you require it - just ask!", "WHISPER", nil, playerName)
         end
     elseif foodStock then
-        SendChatMessage("I have " .. foodStock .. " in stock if you require it - just ask!", "WHISPER", nil, playerName)
+        Compat.sendChatMessage("I have " .. foodStock .. " in stock if you require it - just ask!", "WHISPER", nil, playerName)
     end
 end
 

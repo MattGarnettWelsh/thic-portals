@@ -3,6 +3,7 @@ local Config = _G.Config
 local InviteTrade = _G.InviteTrade
 local UI = _G.UI
 local Utils = _G.Utils
+local Compat = _G.Compat
 local Events = {}
 
 _G.Events = Events
@@ -35,7 +36,7 @@ function Events.initializeUI()
     end
 
     -- Final verification that spellbook is readable
-    local testSpell = GetSpellBookItemName(1, BOOKTYPE_SPELL)
+    local testSpell = Compat.getSpellBookItemName(1)
     if not testSpell then
         Utils.print("ERROR: Cannot initialize - spellbook not accessible!")
         return
@@ -103,7 +104,7 @@ function Events.onEvent(self, event, ...)
                 end
 
                 -- Verify spells are loaded by checking if we can read the spellbook
-                local testSpell = GetSpellBookItemName(1, BOOKTYPE_SPELL)
+                local testSpell = Compat.getSpellBookItemName(1)
                 if not testSpell then
                     -- Spellbook still not ready, try again with longer delay
                     Utils.print("Spellbook not ready yet, waiting...")
@@ -137,6 +138,11 @@ function Events.onEvent(self, event, ...)
 
     if event == "CHAT_MSG_SAY" or event == "CHAT_MSG_WHISPER" or event == "CHAT_MSG_YELL" or event == "CHAT_MSG_PARTY" or
         checkGlobal then
+        -- The payload is secret during chat lockdown, so it cannot be parsed
+        if Compat.inChatMessagingLockdown() then
+            return
+        end
+
         printEvent(event)
 
         local args = {...}
@@ -181,9 +187,9 @@ function Events.onEvent(self, event, ...)
 
                 if inviteData.destination then
                     local message = Utils.replacePlaceholders(Config.Settings.inviteMessage, inviteData.destination)
-                    SendChatMessage(message, "WHISPER", nil, inviteData.fullName)
+                    Compat.sendChatMessage(message, "WHISPER", nil, inviteData.fullName)
                 else
-                    SendChatMessage(Config.Settings.inviteMessageWithoutDestination, "WHISPER", nil, inviteData.fullName)
+                    Compat.sendChatMessage(Config.Settings.inviteMessageWithoutDestination, "WHISPER", nil, inviteData.fullName)
                 end
                 if Config.Settings.enableFoodWaterSupport then
                     InviteTrade.sendFoodAndWaterStockMessage(inviteData.name, inviteData.class)
@@ -250,9 +256,9 @@ function Events.onEvent(self, event, ...)
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
         local unit, _, spellID = ...
         if unit == "player" then
-            local spellName = GetSpellInfo(spellID)
+            local spellName = Compat.getSpellName(spellID)
             for _, portalName in ipairs(Config.Portals) do
-                if spellName:lower() == portalName:lower() then
+                if spellName and spellName:lower() == portalName:lower() then
                     Utils.debugPrint("Portal to " .. spellName .. " successfully cast!")
 
                     Config.CurrentAlivePortals[spellName] = true
@@ -339,11 +345,11 @@ function Events.handleTradeComplete()
                 -- Send them a thank you!
                 local message = Utils.replacePlaceholders(Config.Settings.tipMessage,
                     Events.pendingInvites[Config.currentTraderName].destination)
-                SendChatMessage(message, "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
+                Compat.sendChatMessage(message, "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
             else
                 local message = Utils.replacePlaceholders(Config.Settings.noTipMessage,
                     Events.pendingInvites[Config.currentTraderName].destination)
-                SendChatMessage(message, "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
+                Compat.sendChatMessage(message, "WHISPER", nil, Events.pendingInvites[Config.currentTraderName].fullName)
             end
 
             Events.pendingInvites[Config.currentTraderName].hasPaid = true

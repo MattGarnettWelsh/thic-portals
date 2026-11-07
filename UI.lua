@@ -1,6 +1,7 @@
 -- UI.lua
 local Config = _G.Config
 local Utils = _G.Utils
+local Compat = _G.Compat
 
 local UI = {}
 
@@ -328,7 +329,7 @@ function UI.setIconSpellTexture(actionButton, portal)
         actionButton:SetEnabled(true)
 
         -- Get the icon texture for the portal spell
-        local iconTexture = GetSpellTexture(portal.spellID)
+        local iconTexture = Compat.getSpellTexture(portal.spellID)
         if iconTexture then
             -- Set the icon texture for the portal spell
             actionButton.icon:SetTexture(iconTexture)
@@ -508,7 +509,7 @@ function UI.updateTicketFrame()
     local removeButton = UI.ticketFrame.removeButton
     removeButton:SetEnabled(false)
     removeButton:SetScript("OnClick", function()
-        UninviteUnit(sender)
+        Compat.uninviteUnit(sender)
 
         Utils.debugPrint("" .. sender .. " has been removed from the party.")
 
@@ -875,6 +876,7 @@ function UI.showPaginatedTicketWindow()
                     ticketFrame.originalMessageValue:Hide()
                 end
 
+                local sender = ticketFrame.currentSender
                 if Events.pendingInvites[sender] and Events.pendingInvites[sender].travelled then
                     -- Show Complete TICK
                     if UI.ticketFrame.completeText then
@@ -1368,13 +1370,9 @@ function UI.createOptionsPanel()
     messageConfigGroup:AddChild(noTipMessageGroup)
     messageConfigGroup:AddChild(largeVerticalGap)
 
-    -- Short delay to ensure the UI is ready before we attempt to populate the keyword sections
-    repeat
-        C_Timer.After(1, function() end)
-        Utils.debugPrint("Waiting for UI to initialize before populating keyword sections...")
-    until Events.uiInitialized
-
     -- Creating Keyword Sections
+    -- These only read the keyword tables on Config.Settings, which are populated
+    -- at VARIABLES_LOADED, so there is nothing to wait on before building them.
     createKeywordSection(scroll, "|cFFFFD700Any Keyword Ban List Management|r", Config.Settings.KeywordBanList,
         "Keyword",
         "If the addon matches one of these keywords or phrases in any evaluated message, it will ignore it. This is an exact match by default, to use a partial match where the keyword exists within another word, wrap the keyword in '%' (e.g. %keyword%).")
